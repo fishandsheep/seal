@@ -1,0 +1,30 @@
+
+.footer {
+    border-top: 1px solid  gray;
+    font-size: 14px;
+    padding-top: calc(var(--pico-spacing));
+    text-align: center;
+}
+
+.header {
+    display: flex;
+    border-bottom: 1px solid  gray;
+    font-size: 35px;
+    font-weight: 300;
+}
+
+.logo {
+    width: 150px;
+    height: 150px;
+}
+
+.slogan {
+    font-family: monospace;
+    margin: auto;
+    align-content:center;
+}
+
+.mysql{
+    display: inline;
+    color: #0172ad;
+}

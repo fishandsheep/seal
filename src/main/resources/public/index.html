@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8">
+    <title>mysql风险扫描工具</title>
+    <link rel="stylesheet" href="./static/css/pico.min.css" />
+    <link rel="stylesheet" href="./static/css/self.css" />
+    <script defer src="./static/js/alpine.min.js"></script>
+</head>
+
+<body>
+    <header>
+        <div class="container header">
+            <object class="logo" data="./static/img/seal.svg" type=""></object>
+            <div class="slogan">A tool to find risky sql by paring tcpdump files, only supports <p class="mysql">MySQL
+                    8.x</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="container" x-data="{ 
+        db: {} ,
+        support: false,
+        msg: '',
+        uploadFile:'',
+        sqls: {},
+        async connect() {
+            this.db.version = 'connecting...';
+            var res = await (await fetch('/connect',{
+                method: 'POST',
+                body: JSON.stringify(this.db),
+            })).json();
+           this.db.version = res.version;
+           this.db.id = res.id;
+           if(res.version.charAt(0) === '8') {
+                this.support = true;
+                this.msg = 'support version';
+           }else{
+                this.support = false;
+                this.msg = 'mysql version must >= 8.x';
+           }
+        },
+        async parse() {
+            //console.log(this.uploadFile);
+            var formData = new FormData();
+            formData.append('file',this.uploadFile);
+            formData.append('id', this.db.id);
+            var res = await (await fetch('/upload',{
+                method: 'POST',
+                body: formData,
+            })).json();
+            this.sqls = res;
+            console.log(this.sqls);
+        }
+    }">
+        <div class="grid">
+            <input x-model="db.url" type="url" name="url" placeholder="Url" aria-label="Url" />
+            <input x-model="db.port" type="number" name="port" placeholder="Port" aria-label="Port" />
+            <input x-model="db.schema" type="text" name="schema" placeholder="Schema" aria-label="Schema" />
+
+        </div>
+        <div class="grid">
+            <input x-model="db.username" type="text" name="username" placeholder="Username" aria-label="Username" />
+            <input x-model="db.password" type="password" name="password" placeholder="Password" aria-label="Password" />
+            <div>
+                <input x-model="db.version" type="text" name="version" placeholder="Version" aria-label="Version"
+                    :aria-invalid="support ? 'false' : 'true'" aria-describedby="valid-helper" disabled />
+                <small id="valid-helper" x-text="msg"></small>
+            </div>
+        </div>
+        <div class="grid">
+            <small><button @click="connect">Connect</button></small>
+            <small> <input type="file" x-ref="file" @change="uploadFile = $refs.file.files[0]" accept=".pcap" /></small>
+            <small> <button @click="parse">Parse</button></small>
+
+        </div>
+
+
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">Time</th>
+                    <th scope="col">Sql Content</th>
+                    <th scope="col">Take Time(ms)</th>
+                </tr>
+            </thead>
+            <!--TODO 分页-->
+            <tbody>
+                <template x-for="sql in sqls">
+                    <tr>
+                        <td x-text="sql.time"></td>
+                        <td x-text="sql.content"></td>
+                        <td x-text="sql.takeTime"></td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </main>
+
+    <footer>
+        <div class="container footer">Design by <a rel="noopener noreferrer" class="secondary"
+                href="https://picocss.com/" target="_blank">pico.css</a></div>
+    </footer>
+</body>
+
+</html>
