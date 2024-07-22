@@ -4,7 +4,7 @@
 ### 涉及技术
 | 框架            | 技术           | 官网                       |
 |---------------|--------------|--------------------------|
-| css           | pico.css     | https://picocss.com/     |
+| css           | daisyui.css  | https://daisyui.com/     |
 | js            | alpine.js    | https://alpinejs.dev/    |
 | web           | javalin      | https://javalin.io/      |
 | database      | eclipsestore | https://eclipsestore.io/ |

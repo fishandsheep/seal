@@ -23,7 +23,7 @@ public class PcapUtil {
         return lineBreakPattern.matcher(str).replaceAll(" ");
     }
 
-    private static final String FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+    private static final String FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
 
     private static final byte[] LOWER_SELECT_FLAG = {3, 0, 1, 83, 69, 76, 69, 67, 84};
     private static final byte[] UPPER_SELECT_FLAG = {3, 0, 1, 115, 101, 108, 101, 99, 116};
