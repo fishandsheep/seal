@@ -7,35 +7,25 @@
     <script defer src="./static/js/tailwindcss.js"></script>
     <script defer src="./static/js/alpine.min.js"></script>
 </head>
-<style>
-    body {
-        font-family: 'Inter', sans-serif;
-        background-color: #f5f7fa;
-    }
-    header {
-        background-color: #1f2937;
-        color: white;
-    }
-</style>
 
-<body>
-<header class="border-b border-gray-200">
-    <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 lg:px-8">
-        <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
-            <h1 class="text-2xl font-bold sm:text-3xl">Seal</h1>
-            <div class="flex items-center gap-4 text-2xl">
-                A tool to find risky SQL by parsing tcpdump files, only supports MySQL 8.x
-            </div>
-            <div class="avatar">
-                <div class="w-24 rounded-full">
-                    <img src="./static/img/seal.svg"></img>
+<body class="bg-neutral-50 font-mono h-full">
+    <header class="border-b border-gray-200 bg-gray-800 text-white">
+        <div class="mx-auto max-w-screen-xl px-4 py-2 sm:px-6 lg:px-8">
+            <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
+                <h1 class="text-2xl font-bold sm:text-3xl">Seal</h1>
+                <div class="flex items-center gap-4 text-2xl">
+                    A tool to find risky SQL by parsing tcpdump files, only supports MySQL 8.x
+                </div>
+                <div class="avatar">
+                    <div class="w-24 rounded-full">
+                        <img src="./static/img/seal.svg"></img>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</header>
+    </header>
 
-<div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-4 lg:px-8" x-data="{
+    <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-4 lg:px-8" x-data="{
         db: {} ,
         support: false,
         msg: '',
@@ -64,7 +54,7 @@
                 this.currentPage = 1;
                 return;
             }
-
+            
             var formData = new FormData();
             formData.append('file',this.uploadFile);
             formData.append('id', this.db.id);
@@ -75,6 +65,8 @@
                 body: formData,
             })).json();
             this.sqls = res;
+
+            console.log(this.sqls.total/this.pageSize)
         }
     }">
         <div class="flex">
@@ -102,8 +94,8 @@
         </div>
 
 
-        <div class="overflow-x-auto">
-            <table class="table">
+        <div class="h-128 overflow-x-auto">
+            <table class="table table-sm">
                 <thead>
                     <tr>
                         <th></th>
@@ -124,13 +116,18 @@
                 </tbody>
             </table>
         </div>
+        <div class="flex justify-center items-center pt-4 pb-12 relative" x-show="sqls.total">
+            <button class="btn btn-info left-0 inset-y-4 absolute" @click="export">Export</button>
 
-        <div class="join flex justify-center pt-4 pb-12">
-            <div class="join-item" x-text="'共' +'sqls.total'+ '条'"></div>
-            <button class="join-item btn" :disabled="currentPage == 1" @click="parse(currentPage--)">«</button>
-            <button class="join-item btn" x-model="currentPage" x-text="'Page ' + currentPage"></button>
-            <button class="join-item btn" :disabled="currentPage == sqls.total/pageSize" @click="parse(currentPage++)">»</button>
+            <div class="mr-2" x-text="'共' +sqls.total+ '条'"></div>
+            <div class="join">
+                <button class="join-item btn" :disabled="currentPage == 1" @click="parse(currentPage--)">«</button>
+                <button class="join-item btn" x-model="currentPage" x-text="'Page ' + currentPage"></button>
+                <button class="join-item btn" :disabled="currentPage >= sqls.total/pageSize"
+                    @click="parse(currentPage++)">»</button>
+            </div>
         </div>
+
     </div>
     <footer class="footer footer-center bg-gray-100 text-base-content p-4 bottom-0 fixed">
         <aside>
