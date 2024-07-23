@@ -7,14 +7,24 @@
     <script defer src="./static/js/tailwindcss.js"></script>
     <script defer src="./static/js/alpine.min.js"></script>
 </head>
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f5f7fa;
+    }
+    header {
+        background-color: #1f2937;
+        color: white;
+    }
+</style>
 
 <body>
-<header class="border-b border-gray-200 bg-gray-100">
-    <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-2 lg:px-8">
+<header class="border-b border-gray-200">
+    <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 lg:px-8">
         <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
-            <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">Seal</h1>
+            <h1 class="text-2xl font-bold sm:text-3xl">Seal</h1>
             <div class="flex items-center gap-4 text-2xl">
-                A tool to find risky sql by paring tcpdump files, only supports MySQL 8.x
+                A tool to find risky SQL by parsing tcpdump files, only supports MySQL 8.x
             </div>
             <div class="avatar">
                 <div class="w-24 rounded-full">
