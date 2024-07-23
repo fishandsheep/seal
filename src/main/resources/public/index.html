@@ -9,23 +9,23 @@
 </head>
 
 <body>
-    <header class="border-b border-gray-200 bg-gray-100">
-        <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-2 lg:px-8">
-            <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
-                <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">Seal</h1>
-                <div class="flex items-center gap-4 text-2xl">
-                    A tool to find risky sql by paring tcpdump files, only supports MySQL 8.x
-                </div>
-                <div class="avatar">
-                    <div class="w-24 rounded-full">
-                        <img src="./static/img/seal.svg"></img>
-                    </div>
+<header class="border-b border-gray-200 bg-gray-100">
+    <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-2 lg:px-8">
+        <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
+            <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">Seal</h1>
+            <div class="flex items-center gap-4 text-2xl">
+                A tool to find risky sql by paring tcpdump files, only supports MySQL 8.x
+            </div>
+            <div class="avatar">
+                <div class="w-24 rounded-full">
+                    <img src="./static/img/seal.svg"></img>
                 </div>
             </div>
         </div>
-    </header>
+    </div>
+</header>
 
-    <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-4 lg:px-8" x-data="{ 
+<div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-4 lg:px-8" x-data="{
         db: {} ,
         support: false,
         msg: '',
@@ -67,65 +67,66 @@
             this.sqls = res;
         }
     }">
-        <div class="flex">
-            <input class="flex-none w-64 input input-bordered mr-2" x-model="db.url" type="url" name="url"
-                placeholder="Url" />
-            <input class="flex-initial w-18  input input-bordered ml-2 mr-2" x-model="db.port" type="number"
-                value="3306" name="port" placeholder="Port" />
-            <input class="flex-initial w-18  input input-bordered ml-2" x-model="db.schema" type="text" name="schema"
-                placeholder="Schema" />
-            <input class="flex-initial w-18  input input-bordered ml-2 mr-2" x-model="db.username" type="text"
-                name="username" placeholder="Username" />
-            <input class="flex-initial w-18  input input-bordered ml-2 mr-2" x-model="db.password" type="password"
-                name="password" placeholder="Password" />
-        </div>
-
-        <div class="flex pt-2">
-            <button class="btn btn-info mr-2" @click="connect">Connect</button>
-            <input class="input input-bordered ml-2" x-model="db.version" type="text" name="version"
-                placeholder="Version" disabled />
-        </div>
-        <div class="flex pt-2">
-            <input type="file" class="file-input file-input-bordered file-input-info w-full max-w-xs mr-2" x-ref="file"
-                @change="uploadFile = $refs.file.files[0]" accept=".pcap" />
-            <button class="btn btn-active ml-2" @click="parse">Parse File</button>
-        </div>
-
-
-        <div class="overflow-x-auto">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th scope="col">Time</th>
-                        <th scope="col">Sql Content</th>
-                        <th scope="col">Take Time(ms)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-for="(sql,index) in sqls" :key="index">
-                        <tr>
-                            <th x-text="index+1"></th>
-                            <td x-text="sql.time"></td>
-                            <td x-text="sql.content"></td>
-                            <td x-text="sql.takeTime"></td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="join flex justify-center pt-4 pb-12">
-            <button class="join-item btn" @click="parse(currentPage--)">«</button>
-            <button class="join-item btn" x-model="currentPage" x-text="'Page ' + currentPage"></button>
-            <button class="join-item btn" @click="parse(currentPage++)">»</button>
-        </div>
+    <div class="flex">
+        <input class="flex-none w-64 input input-bordered mr-2" x-model="db.url" type="url" name="url"
+               placeholder="Url" />
+        <input class="flex-initial w-18  input input-bordered ml-2 mr-2" x-model="db.port" type="number"
+               value="3306" name="port" placeholder="Port" />
+        <input class="flex-initial w-18  input input-bordered ml-2" x-model="db.schema" type="text" name="schema"
+               placeholder="Schema" />
+        <input class="flex-initial w-18  input input-bordered ml-2 mr-2" x-model="db.username" type="text"
+               name="username" placeholder="Username" />
+        <input class="flex-initial w-18  input input-bordered ml-2 mr-2" x-model="db.password" type="password"
+               name="password" placeholder="Password" />
     </div>
-    <footer class="footer footer-center bg-gray-100 text-base-content p-4 bottom-0 fixed">
-        <aside>
-            <p>Copyright © 2024 - All right reserved by fisheep</p>
-        </aside>
-    </footer>
+
+    <div class="flex pt-2">
+        <button class="btn btn-info mr-2" @click="connect">Connect</button>
+        <input class="input input-bordered ml-2" x-model="db.version" type="text" name="version"
+               placeholder="Version" disabled />
+    </div>
+    <div class="flex pt-2">
+        <input type="file" class="file-input file-input-bordered file-input-info w-full max-w-xs mr-2" x-ref="file"
+               @change="uploadFile = $refs.file.files[0]" accept=".pcap" />
+        <button class="btn btn-active ml-2" @click="parse">Parse File</button>
+    </div>
+
+
+    <div class="overflow-x-auto">
+        <table class="table">
+            <thead>
+            <tr>
+                <th></th>
+                <th scope="col">Time</th>
+                <th scope="col">Sql Content</th>
+                <th scope="col">Take Time(ms)</th>
+            </tr>
+            </thead>
+            <tbody>
+            <template x-for="(sql,index) in sqls.results" :key="index">
+                <tr>
+                    <th x-text="index+1"></th>
+                    <td x-text="sql.time"></td>
+                    <td x-text="sql.content"></td>
+                    <td x-text="sql.takeTime"></td>
+                </tr>
+            </template>
+
+            </tbody>
+        </table>
+    </div>
+
+    <div class="join flex justify-center pt-4 pb-12">
+        <button class="join-item btn" @click="parse(currentPage--)">«</button>
+        <button class="join-item btn" x-model="currentPage" x-text="'Page ' + currentPage"></button>
+        <button class="join-item btn" @click="parse(currentPage++)">»</button>
+    </div>
+</div>
+<footer class="footer footer-center bg-gray-100 text-base-content p-4 bottom-0 fixed">
+    <aside>
+        <p>Copyright © 2024 - All right reserved by fisheep</p>
+    </aside>
+</footer>
 </body>
 
 </html>
