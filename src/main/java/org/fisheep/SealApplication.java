@@ -28,14 +28,11 @@ public class SealApplication {
         app.post("/upload", ctx -> {
             UploadedFile uploadedFile = ctx.uploadedFile("file");
             Db db = DbFactory.dbConfigs.get(ctx.formParam("id"));
-            PageResult<SqlStatement> pageResult = new PageResult<>();
             List<SqlStatement> results = PcapUtil.parseLogFile(uploadedFile, db.getPort());
-            pageResult.setResults(results);
-            pageResult.setTotal(results.size());
+            PageResult<SqlStatement> pageResult = new PageResult<>(results,results.size());
             pageResult.saveResult();
             PageResult<SqlStatement> pageResults = pageResult.results(Integer.parseInt(ctx.formParam("currentPage")), Integer.parseInt(ctx.formParam("pageSize")));
 //            List<SqlStatement> sqlStatements = PcapUtil.parseLogFile(uploadedFile, db.getPort());
-
             //TODO 异步？
 //            List<SqlStatement> subList = sqlStatements.subList(0, 10);
             //TODO 增加风险解析方法

@@ -20,6 +20,12 @@ public class PageResult<T> {
 //        this.storageManager = storageManager;
 //    }
 
+
+    public PageResult(List<T> results, int total) {
+        this.results = results;
+        this.total = total;
+    }
+
     public void saveResult() {
         EmbeddedStorageManager storageManager = EmbeddedStorage.start();
         storageManager.setRoot(this);
