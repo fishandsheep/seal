@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <header class="border-b border-gray-200 bg-gray-50">
+    <header class="border-b border-gray-200 bg-gray-100">
         <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-2 lg:px-8">
             <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
                 <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">Seal</h1>
@@ -31,6 +31,8 @@
         msg: '',
         uploadFile:'',
         sqls: {},
+        currentPage: 1,
+        pageSize: 10,
         async connect() {
             this.db.version = 'connecting...';
             var res = await (await fetch('/connect',{
@@ -48,16 +50,21 @@
            }
         },
         async parse() {
-            //console.log(this.uploadFile);
+            if (this.currentPage < 1) {
+                this.currentPage = 1;
+                return;
+            }
+
             var formData = new FormData();
             formData.append('file',this.uploadFile);
             formData.append('id', this.db.id);
+            formData.append('currentPage', this.currentPage);
+            formData.append('pageSize', this.pageSize);
             var res = await (await fetch('/upload',{
                 method: 'POST',
                 body: formData,
             })).json();
             this.sqls = res;
-            console.log(this.sqls);
         }
     }">
         <div class="flex">
@@ -108,13 +115,17 @@
             </table>
         </div>
 
+        <div class="join flex justify-center pt-4">
+            <button class="join-item btn" @click="parse(currentPage--)">«</button>
+            <button class="join-item btn" x-model="currentPage" x-text="'Page ' + currentPage"></button>
+            <button class="join-item btn" @click="parse(currentPage++)">»</button>
+        </div>
     </div>
-
-    <footer class="footer footer-center bg-base-300 text-base-content p-4">
+    <footer class="footer footer-center bg-gray-100 text-base-content p-4 bottom-0 fixed">
         <aside>
-          <p>Copyright © 2024 - All right reserved by fisheep</p>
+            <p>Copyright © 2024 - All right reserved by fisheep</p>
         </aside>
-      </footer>
+    </footer>
 </body>
 
 </html>
