@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Result {
 
-    private Integer code = 200;
+    private int code = 200;
 
     private String message = "成功";
 

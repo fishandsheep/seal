@@ -1,11 +1,12 @@
 package org.fisheep.bean;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Dbs {
 
-    private List<Db> dbs = new ArrayList<>();
+    private Map<String, List<Db>> dbs = new HashMap<>();
 
 
 }
