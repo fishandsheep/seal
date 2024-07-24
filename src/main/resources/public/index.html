@@ -98,19 +98,17 @@
             <table class="table table-sm">
                 <thead>
                     <tr>
-                        <th></th>
-                        <th scope="col">Time</th>
+                        <th scope="col">Count</th>
                         <th scope="col">Sql Content</th>
-                        <th scope="col">Take Time(ms)</th>
+                        <th scope="col">Max Time(ms)</th>
                     </tr>
                 </thead>
                 <tbody>
                     <template x-for="(sql,index) in sqls.results" :key="index">
                         <tr>
-                            <th x-text="index+1"></th>
-                            <td x-text="sql.time"></td>
+                            <td x-text="sql.count"></td>
                             <td x-text="sql.content"></td>
-                            <td x-text="sql.takeTime"></td>
+                            <td x-text="sql.maxTakeTime"></td>
                         </tr>
                     </template>
                 </tbody>

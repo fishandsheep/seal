@@ -4,8 +4,6 @@ package org.fisheep.util;
 import io.javalin.http.UploadedFile;
 import io.kaitai.struct.ByteBufferKaitaiStream;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateFormatUtils;
 import org.fisheep.bean.SqlStatement;
 import org.fisheep.bean.TcpSqlInfo;
 import org.fisheep.kaitai.*;
@@ -14,6 +12,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class PcapUtil {
 
@@ -22,8 +21,6 @@ public class PcapUtil {
     public static String singleLine(String str) {
         return lineBreakPattern.matcher(str).replaceAll(" ");
     }
-
-    private static final String FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
 
     private static final byte[] LOWER_SELECT_FLAG = {3, 0, 1, 83, 69, 76, 69, 67, 84};
     private static final byte[] UPPER_SELECT_FLAG = {3, 0, 1, 115, 101, 108, 101, 99, 116};
@@ -71,8 +68,7 @@ public class PcapUtil {
                         long reqTimestamp = tcpSqlInfo.getTimestamp();
 
                         sqlStatement.setContent(singleLine(sql));
-                        sqlStatement.setTime(DateFormatUtils.format(reqTimestamp, FORMAT));
-                        sqlStatement.setTakeTime(respTimestamp - reqTimestamp);
+                        sqlStatement.setMaxTakeTime(respTimestamp - reqTimestamp);
                         sqlStatements.add(sqlStatement);
 
                         //清除 tcpSqlInfoMap 中的数据
@@ -121,7 +117,25 @@ public class PcapUtil {
             }
 
         }
-        return sqlStatements;
+        return countSqlStatements(sqlStatements);
+    }
+
+    private static List<SqlStatement> countSqlStatements(List<SqlStatement> sqlStatements) {
+        Map<String, LongSummaryStatistics> summaryStats = sqlStatements.stream()
+                .collect(Collectors.groupingBy(
+                        SqlStatement::getContent, // 分组依据ID
+                        Collectors.summarizingLong(SqlStatement::getMaxTakeTime) // 每个组收集takeTime的统计信息
+                ));
+
+        // 创建新的List，包含ID、最大耗时和执行次数
+        return summaryStats.entrySet().stream()
+                .map(entry -> SqlStatement.builder()
+                        .content(entry.getKey())
+                        .maxTakeTime(entry.getValue().getMax())
+                        .count(entry.getValue().getCount())
+                        .build())
+                .sorted(Comparator.comparing(SqlStatement::getCount).reversed())
+                .collect(Collectors.toList());
     }
 
     /**
