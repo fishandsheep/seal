@@ -5,7 +5,7 @@ import io.javalin.http.UploadedFile;
 import io.javalin.http.staticfiles.Location;
 import org.fisheep.bean.Db;
 import org.fisheep.bean.DbFactory;
-import org.fisheep.bean.PageResult;
+import org.fisheep.common.PageResult;
 import org.fisheep.bean.SqlStatement;
 import org.fisheep.util.PcapUtil;
 
@@ -29,9 +29,9 @@ public class SealApplication {
             UploadedFile uploadedFile = ctx.uploadedFile("file");
             Db db = DbFactory.dbConfigs.get(ctx.formParam("id"));
             List<SqlStatement> results = PcapUtil.parseLogFile(uploadedFile, db.getPort());
-            PageResult<SqlStatement> pageResult = new PageResult<>(results,results.size());
-            pageResult.saveResult();
-            PageResult<SqlStatement> pageResults = pageResult.results(Integer.parseInt(ctx.formParam("currentPage")), Integer.parseInt(ctx.formParam("pageSize")));
+            PageResult<SqlStatement> pageResult = new PageResult<>(results, Integer.parseInt(ctx.formParam("currentPage")), Integer.parseInt(ctx.formParam("pageSize")));
+//            pageResult.saveResult();
+//            PageResult<SqlStatement> pageResults = pageResult.results(Integer.parseInt(ctx.formParam("currentPage")), Integer.parseInt(ctx.formParam("pageSize")));
 //            List<SqlStatement> sqlStatements = PcapUtil.parseLogFile(uploadedFile, db.getPort());
             //TODO 异步？
 //            List<SqlStatement> subList = sqlStatements.subList(0, 10);
