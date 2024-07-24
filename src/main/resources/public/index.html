@@ -25,12 +25,13 @@
         </div>
     </header>
 
-    <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-4 lg:px-8" x-data="{
+    <div class="mx-auto max-w-screen-xl px-4 py-8" x-data="{
         db: {} ,
         support: false,
         msg: '',
         uploadFile:'',
-        sqls: {},
+        sqls: {total:0},
+        loading: false,
         currentPage: 1,
         pageSize: 10,
         async connect() {
@@ -49,12 +50,15 @@
                 this.msg = 'mysql version must >= 8.x';
            }
         },
-        async parse() {
+        async parse(page) {
             if (this.currentPage < 1) {
                 this.currentPage = 1;
                 return;
             }
             
+            if(!page){
+                this.loading = true;
+            }
             var formData = new FormData();
             formData.append('file',this.uploadFile);
             formData.append('id', this.db.id);
@@ -65,9 +69,11 @@
                 body: formData,
             })).json();
             this.sqls = res;
-
-            console.log(this.sqls.total/this.pageSize)
-        }
+            this.loading = false;
+        },
+        async exportSql() {
+            console.log('to do export')
+        },
     }">
         <div class="flex">
             <input class="flex-none w-64 input input-bordered mr-2" x-model="db.url" type="url" name="url"
@@ -90,11 +96,12 @@
         <div class="flex pt-2">
             <input type="file" class="file-input file-input-bordered file-input-info w-full max-w-xs mr-2" x-ref="file"
                 @change="uploadFile = $refs.file.files[0]" accept=".pcap" />
-            <button class="btn btn-active ml-2" @click="parse">Parse File</button>
+            <button class="btn btn-active ml-2" @click="parse(0)"><span class="loading loading-spinner"
+                    x-show="loading"></span>Parse</button>
         </div>
 
 
-        <div class="h-128 overflow-x-auto">
+        <div class="h-full overflow-x-auto">
             <table class="table table-sm">
                 <thead>
                     <tr>
@@ -114,18 +121,20 @@
                 </tbody>
             </table>
         </div>
-        <div class="flex justify-center items-center pt-4 pb-12 relative" x-show="sqls.total">
-            <button class="btn btn-info left-0 inset-y-4 absolute" @click="export">Export</button>
+        <div class="fixed bottom-4">
 
-            <div class="mr-2" x-text="'共' +sqls.total+ '条'"></div>
-            <div class="join">
-                <button class="join-item btn" :disabled="currentPage == 1" @click="parse(currentPage--)">«</button>
-                <button class="join-item btn" x-model="currentPage" x-text="'Page ' + currentPage"></button>
-                <button class="join-item btn" :disabled="currentPage >= sqls.total/pageSize"
-                    @click="parse(currentPage++)">»</button>
+            <div class="flex pt-4 pb-12 items-center">
+                <button class="btn btn-info" x-bind:disabled="sqls.total == 0" @click="exportSql">Export</button>
+                <div class="ml-32 mr-2" x-text="'第' +sqls.total+ '页'"></div>
+                <div class="join">
+                    <button class="join-item btn" :disabled="currentPage == 1" @click="parse(currentPage--)">«</button>
+                    <button class="join-item btn" x-model="currentPage" x-text="'Page ' + currentPage"></button>
+                    <button class="join-item btn" :disabled="currentPage >= sqls.total/pageSize"
+                        @click="parse(currentPage++)">»</button>
+                </div>
+                <div class="ml-64" x-text="'共' +sqls.total+ '条'"></div>
             </div>
         </div>
-
     </div>
     <footer class="footer footer-center bg-gray-100 text-base-content p-4 bottom-0 fixed">
         <aside>
