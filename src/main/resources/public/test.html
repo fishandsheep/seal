@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,  
+                   initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+<body class="h-screen bg-gray-400 font-mono flex flex-col">
+
+    <div class="flex justify-center items-center bg-gray-800 px-8 h-24 shadow text-white">
+            <div class="text-3xl mr-4">Seal</div>
+            <div class="text-xl font-light text-gray-300">A tool to find risky SQL by parsing tcpdump files, only
+                supports MySQL 8.x</div>
+                <img class="h-20 rounded-full border ml-4" src="./static/img/seal.svg"></img>
+    </div>
+
+    <div class="flex flex-1 flex-col">
+        <div class="border-2 p-2 m-2 mx-auto">
+            <input class="w-36" type="text" placeholder="url">
+            <input class="w-12" type="number" placeholder="port">
+            <input class="w-14" type="text" placeholder="schema">
+            <input class="w-20" type="text" placeholder="username">
+            <input class="w-20" type="password" placeholder="password">
+           
+        </div>
+        <div>
+            <div>table list 区域</div>
+            <div>页码区域</div>
+        </div>
+    </div>
+
+</body>
+
+</html>
