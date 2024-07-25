@@ -8,7 +8,7 @@
     <script defer src="./static/js/alpine.min.js"></script>
 </head>
 
-<body class="bg-neutral-50 font-mono h-full">
+<body class="bg-neutral-50 font-mono h-full flex flex-col">
     <header class="border-b border-gray-200 bg-gray-800 text-white">
         <div class="mx-auto max-w-screen-xl px-4 py-2 sm:px-6 lg:px-8">
             <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
@@ -30,7 +30,10 @@
         support: false,
         msg: '',
         uploadFile:'',
-        sqls: {total:0},
+        sqls: {
+            totalRecords: 0,
+            totalPages: 0
+        },
         loading: false,
         currentPage: 1,
         pageSize: 10,
@@ -101,20 +104,20 @@
         </div>
 
 
-        <div class="h-full overflow-x-auto">
+        <div class="h-full overflow-x-auto flex-1">
             <table class="table table-sm">
                 <thead>
                     <tr>
-                        <th scope="col">Count</th>
                         <th scope="col">Sql Content</th>
+                        <th scope="col">Count</th>
                         <th scope="col">Max Time(ms)</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <template x-for="(sql,index) in sqls.results" :key="index">
+                    <template x-for="(sql,index) in sqls.result" :key="index">
                         <tr>
-                            <td x-text="sql.count"></td>
                             <td x-text="sql.content"></td>
+                            <td x-text="sql.count"></td>
                             <td x-text="sql.maxTakeTime"></td>
                         </tr>
                     </template>
@@ -124,15 +127,15 @@
         <div class="fixed bottom-4">
 
             <div class="flex pt-4 pb-12 items-center">
-                <button class="btn btn-info" x-bind:disabled="sqls.total == 0" @click="exportSql">Export</button>
-                <div class="ml-32 mr-2" x-text="'第' +sqls.total+ '页'"></div>
+                <button class="btn btn-info" x-bind:disabled="sqls.totalRecords == 0" @click="exportSql">Export</button>
+                <div class="ml-32 mr-2" x-text="'第' +sqls.totalPages+ '页'"></div>
                 <div class="join">
                     <button class="join-item btn" :disabled="currentPage == 1" @click="parse(currentPage--)">«</button>
                     <button class="join-item btn" x-model="currentPage" x-text="'Page ' + currentPage"></button>
-                    <button class="join-item btn" :disabled="currentPage >= sqls.total/pageSize"
+                    <button class="join-item btn" :disabled="currentPage >= sqls.totalPages"
                         @click="parse(currentPage++)">»</button>
                 </div>
-                <div class="ml-64" x-text="'共' +sqls.total+ '条'"></div>
+                <div class="ml-64" x-text="'共' +sqls.totalRecords+ '条'"></div>
             </div>
         </div>
     </div>
