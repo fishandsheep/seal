@@ -24,7 +24,7 @@ public class SealApplication {
             Db db = ctx.bodyAsClass(Db.class);
             DbFactory.getDbVersion(db);
             db.setPassword(null);
-            data.dbs().add("id", db);
+            data.dbs().add(db.getId(), db);
             ctx.json(db);
         });
 
