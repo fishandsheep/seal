@@ -48,7 +48,7 @@ public class SealApplication {
         app.post("/test", ctx -> {
             ClassPathResource resource = new ClassPathResource("bin/soar");
             String absolutePath = resource.getAbsolutePath();
-            String exec = RuntimeUtil.execForStr("echo 'select * from dual' | " + absolutePath);
+            String exec = RuntimeUtil.execForStr("echo 'select * from dual' | " + "/root/soar");
             ctx.html(exec);
         });
 
