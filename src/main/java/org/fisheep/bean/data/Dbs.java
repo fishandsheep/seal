@@ -1,11 +1,11 @@
-package org.fisheep.bean;
+package org.fisheep.bean.data;
 
 import org.eclipse.serializer.persistence.types.PersistenceStoring;
+import org.fisheep.bean.Db;
 import org.fisheep.common.StorageManagerFactory;
 import org.fisheep.common.concurrent.ReadWriteLocked;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Dbs extends ReadWriteLocked {

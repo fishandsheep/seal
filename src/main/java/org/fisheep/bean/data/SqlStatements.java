@@ -1,6 +1,7 @@
-package org.fisheep.bean;
+package org.fisheep.bean.data;
 
 import org.eclipse.serializer.persistence.types.PersistenceStoring;
+import org.fisheep.bean.SqlStatement;
 import org.fisheep.common.StorageManagerFactory;
 import org.fisheep.common.concurrent.ReadWriteLocked;
 

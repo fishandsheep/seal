@@ -1,7 +1,8 @@
-package org.fisheep.bean;
+package org.fisheep.logic;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.fisheep.bean.Db;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

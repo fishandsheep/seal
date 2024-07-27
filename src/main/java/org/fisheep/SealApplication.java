@@ -3,11 +3,11 @@ package org.fisheep;
 import io.javalin.Javalin;
 import io.javalin.http.UploadedFile;
 import io.javalin.http.staticfiles.Location;
-import org.fisheep.bean.Data;
 import org.fisheep.bean.Db;
-import org.fisheep.bean.DbFactory;
 import org.fisheep.bean.SqlStatement;
+import org.fisheep.bean.data.Data;
 import org.fisheep.common.PageResult;
+import org.fisheep.logic.DbFactory;
 import org.fisheep.util.PcapUtil;
 
 import java.util.List;

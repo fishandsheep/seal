@@ -1,20 +1,12 @@
-package org.fisheep.bean;
+package org.fisheep.bean.data;
 
 import org.fisheep.common.StorageManagerFactory;
 
 public class Data {
 
-    private static Data data = null;
     private final SqlStatements sqlStatements = new SqlStatements();
 
     private final Dbs dbs = new Dbs();
-
-//    public static Data newInstance() {
-//        if (data == null){
-//            return Data.newInstance().data();
-//        }
-//        return data;
-//    }
 
     public SqlStatements sqlStatements() {
         return this.sqlStatements;

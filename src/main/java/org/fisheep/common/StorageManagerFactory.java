@@ -2,7 +2,7 @@ package org.fisheep.common;
 
 import org.eclipse.store.storage.embedded.types.EmbeddedStorage;
 import org.eclipse.store.storage.embedded.types.EmbeddedStorageManager;
-import org.fisheep.bean.Data;
+import org.fisheep.bean.data.Data;
 
 public class StorageManagerFactory {
 
@@ -18,7 +18,7 @@ public class StorageManagerFactory {
         return storageManager;
     }
 
-    public static void createStorage() {
+    private static void createStorage() {
         storageManager.setRoot(new Data());
         storageManager.storeRoot();
     }
