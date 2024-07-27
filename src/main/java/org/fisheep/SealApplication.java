@@ -1,5 +1,7 @@
 package org.fisheep;
 
+import cn.hutool.core.io.resource.ClassPathResource;
+import cn.hutool.core.util.RuntimeUtil;
 import io.javalin.Javalin;
 import io.javalin.http.UploadedFile;
 import io.javalin.http.staticfiles.Location;
@@ -40,6 +42,14 @@ public class SealApplication {
 //            List<SqlStatement> subList = sqlStatements.subList(0, 10);
             //TODO 增加风险解析方法
             ctx.json(pageResult);
+        });
+
+
+        app.post("/test", ctx -> {
+            ClassPathResource resource = new ClassPathResource("bin/soar");
+            String absolutePath = resource.getAbsolutePath();
+            String exec = RuntimeUtil.execForStr("echo 'select * from dual |", absolutePath);
+            ctx.html(exec);
         });
 
     }
