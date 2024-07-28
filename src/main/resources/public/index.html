@@ -8,7 +8,9 @@
     <script defer src="./static/js/alpine.min.js"></script>
 </head>
 
-<body class="bg-neutral-50 font-mono h-full flex flex-col">
+<body class="bg-neutral-50 font-mono h-screen flex flex-col">
+
+    
     <header class="border-b border-gray-200 bg-gray-800 text-white">
         <div class="mx-auto max-w-screen-xl px-4 py-2 sm:px-6 lg:px-8">
             <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
@@ -23,9 +25,9 @@
                 </div>
             </div>
         </div>
-    </header>
+    </header>+
 
-    <div class="mx-auto max-w-screen-xl px-4 py-8" x-data="{
+    <div class="mx-auto px-4 py-8" x-data="{
         db: {} ,
         support: false,
         msg: '',
@@ -103,27 +105,24 @@
                     x-show="loading"></span>Parse</button>
         </div>
 
-
-        <div class="h-full overflow-x-auto flex-1">
-            <table class="table table-sm">
-                <thead>
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th scope="col">Sql Content</th>
+                    <th scope="col">Count</th>
+                    <th scope="col">Max Time(ms)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for="(sql,index) in sqls.result" :key="index">
                     <tr>
-                        <th scope="col">Sql Content</th>
-                        <th scope="col">Count</th>
-                        <th scope="col">Max Time(ms)</th>
+                        <td x-text="sql.content"></td>
+                        <td x-text="sql.count"></td>
+                        <td x-text="sql.maxTakeTime"></td>
                     </tr>
-                </thead>
-                <tbody>
-                    <template x-for="(sql,index) in sqls.result" :key="index">
-                        <tr>
-                            <td x-text="sql.content"></td>
-                            <td x-text="sql.count"></td>
-                            <td x-text="sql.maxTakeTime"></td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
-        </div>
+                </template>
+            </tbody>
+        </table>
         <div class="fixed bottom-4">
 
             <div class="flex pt-4 pb-12 items-center">
@@ -139,6 +138,9 @@
             </div>
         </div>
     </div>
+
+
+
     <footer class="footer footer-center bg-gray-100 text-base-content p-4 bottom-0 fixed">
         <aside>
             <p>Copyright © 2024 - All right reserved by fisheep</p>

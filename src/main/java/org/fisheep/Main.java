@@ -32,6 +32,11 @@ public class Main {
 
         var processBuilder = new ProcessBuilder();
 
+
+//        ./soar -query 'SELECT * FROM `userinfo` WHERE `user_id` = 11'
+//        -test-dsn orange:Orange@1124.com@42.193.103.225:3307/orange
+//        -online-dsn orange:Orange@1124.com@42.193.103.225:3307/orange
+//        -allow-online-as-test true
         processBuilder.command("/root/soar", "-query", "select * from dual");
         //processBuilder.command("ipconfig", "/all");
 

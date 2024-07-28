@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html class="h-full">
 
 <head>
     <meta charset="UTF-8" />
@@ -6,33 +6,227 @@
     <meta name="viewport" content="width=device-width,  
                    initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="./static/js/alpine.min.js"></script>
 
 </head>
 
-<body class="h-screen bg-gray-400 font-mono flex flex-col">
+<body class="h-full font-mono flex flex-col">
+
 
     <div class="flex justify-center items-center bg-gray-800 px-8 h-24 shadow text-white">
-            <div class="text-3xl mr-4">Seal</div>
-            <div class="text-xl font-light text-gray-300">A tool to find risky SQL by parsing tcpdump files, only
-                supports MySQL 8.x</div>
-                <img class="h-20 rounded-full border ml-4" src="./static/img/seal.svg"></img>
+        <div class="text-3xl mr-4">Seal</div>
+        <div class="text-xl font-light text-gray-300">A tool to find risky SQL by parsing tcpdump files, only
+            supports MySQL 8.x</div>
+        <img class="h-20 rounded-full border ml-4" src="./static/img/seal.svg"></img>
     </div>
 
-    <div class="flex flex-1 flex-col">
-        <div class="border-2 p-2 m-2 mx-auto">
-            <input class="w-36" type="text" placeholder="url">
-            <input class="w-12" type="number" placeholder="port">
-            <input class="w-14" type="text" placeholder="schema">
-            <input class="w-20" type="text" placeholder="username">
-            <input class="w-20" type="password" placeholder="password">
-           
+    <div class="flex flex-1" x-data="data()">
+
+        <!-- 侧边栏 -->
+        <div  class="flex flex-col justify-between border-e bg-gray-200 w-44">
+            <div class="px-4 py-6">
+                <ul class="mt-6 space-y-2">
+                    <li x-on:click="showActive = true">
+                        <a href="#" x-bind:class="{ 'bg-gray-100': showActive }" class="block rounded-lg  px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700">
+                            数据连接
+                        </a>
+                    </li>
+                    <li x-on:click="showActive = false">
+                        <a href="#" x-bind:class="{ 'bg-gray-100': !showActive }"
+                            class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700">
+                            风险扫描
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sticky inset-x-0 bottom-0 border-t border-gray-100">
+                <a href="https://github.com/BigOrange-1124"
+                    class="flex items-center gap-2 bg-white p-4 hover:bg-gray-50">
+                    <img alt="" src="https://avatars.githubusercontent.com/u/175921632?s=100&v=4"
+                        class="size-10 rounded-full object-cover" />
+
+                    <div>
+                        <p class="text-xs">
+                            <strong class="block font-medium">BigOrange-1124</strong>
+
+                        </p>
+                    </div>
+                </a>
+            </div>
         </div>
-        <div>
-            <div>table list 区域</div>
-            <div>页码区域</div>
+
+
+
+        <!-- 数据连接内容区 -->
+        <div x-show="showActive" class="flex flex-col mx-auto mt-8">
+            <!-- 数据库连接信息 -->
+            <div class="flex space-x-4">
+                <div>
+                    <label for="ip"
+                        class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600">
+                        <input type="text" id="ip"
+                            class="ml-2 h-10 peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                            placeholder="ip" />
+
+                        <span
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
+                            ip
+                        </span>
+                    </label>
+                </div>
+
+                <div>
+                    <label for="port"
+                        class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600">
+                        <input type="number" id="port"
+                            class="w-16 ml-2 h-10 peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                            placeholder="port" />
+
+                        <span
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
+                            port
+                        </span>
+                    </label>
+                </div>
+
+                <div>
+                    <label for="schema"
+                        class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600">
+                        <input type="text" id="schema"
+                            class="w-24 ml-2 h-10 peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                            placeholder="schema" />
+
+                        <span
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
+                            schema
+                        </span>
+                    </label>
+                </div>
+
+                <div>
+                    <label for="username"
+                        class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600">
+                        <input type="username" id="ip"
+                            class="ml-2 h-10 peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                            placeholder="username" />
+
+                        <span
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
+                            Username
+                        </span>
+                    </label>
+                </div>
+
+                <div>
+                    <label for="password"
+                        class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600">
+                        <input type="password" id="password"
+                            class="ml-2 h-10 peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                            placeholder="password" />
+
+                        <span
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
+                            Password
+                        </span>
+                    </label>
+                </div>
+            </div>
+            <!-- 连接数据库 -->
+            <div class="flex space-x-4 mt-4 ">
+                <a class="inline-block rounded border border-blue-500 px-10 py-3 text-sm font-medium text-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring active:bg-indigo-500"
+                    href="#">
+                    connect
+                </a>
+                <div>
+                    <label for="version"
+                        class="relative block overflow-hidden border-b border-gray-200 bg-transparent pt-3 focus-within:border-blue-600">
+                        <input type="email" id="version" placeholder="version"
+                            class="peer h-8 w-full border-none bg-transparent p-0 placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
+                            disabled />
+                        <span
+                            class="absolute start-0 top-2 -translate-y-1/2 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-2 peer-focus:text-xs">
+                            Version
+                        </span>
+                    </label>
+                </div>
+                </a>
+            </div>
+
+            <!-- 数据库列表信息 -->
+            <div class="overflow-x-auto mt-8">
+                <table class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
+                    <thead class="text-left ltr:text-left rtl:text-right">
+                        <tr>
+                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">ip</th>
+                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">port</th>
+                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">schema</th>
+                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">username</th>
+                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">file</th>
+                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">operate</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="divide-y divide-gray-200">
+
+                        <template x-for="(db,index) in dbs" :key="index">
+                            <tr class="odd:bg-gray-50">
+                                <td x-text="db.ip" class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"></td>
+                                <td x-text="db.port" class="whitespace-nowrap px-4 py-2 text-gray-700">3307</td>
+                                <td x-text="db.schema" class="whitespace-nowrap px-4 py-2 text-gray-700">orange</td>
+                                <td x-text="db.username" class="whitespace-nowrap px-4 py-2 text-gray-700">orange</td>
+                                <td class="whitespace-nowrap px-4 py-2 text-gray-700 w-56">
+                                    <div class="relative border-2 rounded-xl">
+                                        <input type="file" id="file"
+                                            class="w-full rounded-md border-gray-200 pe-10 shadow-sm sm:text-sm"
+                                            accept=".pcap" />
+                                    </div>
+                                </td>
+                                <td class="whitespace-nowrap text-gray-700">
+                                    <a class="my-2 mx-4 px-2 py-2 inline-block rounded border border-blue-500 text-sm font-medium text-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring active:bg-indigo-500"
+                                        href="#">
+                                        parse
+                                    </a>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- 风险扫描内容区  -->
+        <div x-show="!showActive">
+            <h1>风险扫描</h1>
         </div>
     </div>
 
+    <script>
+        function data() {
+            return {
+                dbs: [
+                    {
+                        ip: '42.193.103.225',
+                        port: '3307',
+                        schema: 'orange',
+                        username: 'orange'
+                    },
+                    {
+                        ip: '152.32.175.57',
+                        port: '3307',
+                        schema: 'root',
+                        username: 'mysql'
+                    },
+                    {
+                        ip: '42.193.103.225',
+                        port: '3307',
+                        schema: 'orange',
+                        username: 'orange'
+                    }
+                ],
+                showActive: true
+            }
+        }
+    </script>
 </body>
 
 </html>

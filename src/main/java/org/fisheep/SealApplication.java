@@ -1,7 +1,5 @@
 package org.fisheep;
 
-import cn.hutool.core.io.resource.ClassPathResource;
-import cn.hutool.core.util.RuntimeUtil;
 import io.javalin.Javalin;
 import io.javalin.http.UploadedFile;
 import io.javalin.http.staticfiles.Location;
