@@ -10,7 +10,7 @@ import java.io.IOException;
 public class Main {
     public static void main(String[] args) throws IOException {
 
-        String command = "/root/soar -query 'select * from dual'";
+        String command = "/root/soar -query \'select * from dual\'";
         //接收正常结果流
         ByteArrayOutputStream susStream = new ByteArrayOutputStream();
         //接收异常结果流
