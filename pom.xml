@@ -85,6 +85,12 @@
             <artifactId>hutool-core</artifactId>
             <version>5.8.16</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-exec</artifactId>
+            <version>1.4.0</version>
+        </dependency>
     </dependencies>
 
     <build>
