@@ -4,11 +4,13 @@ import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.PumpStreamHandler;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+  /*  public static void main(String[] args) throws IOException {
 
         String command = "/root/soar -query \'select * from dual\'";
         //接收正常结果流
@@ -24,5 +26,26 @@ public class Main {
         System.out.println(susStream.toString("UTF8"));
         System.out.println(errStream.toString("UTF8"));
 
+    }*/
+
+    public static void main(String[] args) throws IOException {
+
+        var processBuilder = new ProcessBuilder();
+
+        processBuilder.command("/root/soar", "-query", "select * from dual");
+        //processBuilder.command("ipconfig", "/all");
+
+        var process = processBuilder.start();
+
+        try (var reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream()))) {
+
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+
+        }
     }
 }
