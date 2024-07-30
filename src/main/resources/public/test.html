@@ -23,11 +23,12 @@
     <div class="flex flex-1" x-data="data()">
 
         <!-- 侧边栏 -->
-        <div  class="flex flex-col justify-between border-e bg-gray-200 w-44">
+        <div class="flex flex-col justify-between border-e bg-gray-200 w-44">
             <div class="px-4 py-6">
                 <ul class="mt-6 space-y-2">
                     <li x-on:click="showActive = true">
-                        <a href="#" x-bind:class="{ 'bg-gray-100': showActive }" class="block rounded-lg  px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700">
+                        <a href="#" x-bind:class="{ 'bg-gray-100': showActive }"
+                            class="block rounded-lg  px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700">
                             数据连接
                         </a>
                     </li>
@@ -56,10 +57,8 @@
             </div>
         </div>
 
-
-
         <!-- 数据连接内容区 -->
-        <div x-show="showActive" class="flex flex-col mx-auto mt-8">
+        <div x-show="!showActive" class="flex flex-col mx-auto mt-8">
             <!-- 数据库连接信息 -->
             <div class="flex space-x-4">
                 <div>
@@ -170,11 +169,12 @@
                     <tbody class="divide-y divide-gray-200">
 
                         <template x-for="(db,index) in dbs" :key="index">
-                            <tr class="odd:bg-gray-50">
+                            <tr class="odd:bg-gray-50"
+                                x-bind:class="{'text-decoration-line: line-through':db.deleteFlag}" x-transition>
                                 <td x-text="db.ip" class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"></td>
-                                <td x-text="db.port" class="whitespace-nowrap px-4 py-2 text-gray-700">3307</td>
-                                <td x-text="db.schema" class="whitespace-nowrap px-4 py-2 text-gray-700">orange</td>
-                                <td x-text="db.username" class="whitespace-nowrap px-4 py-2 text-gray-700">orange</td>
+                                <td x-text="db.port" class="whitespace-nowrap px-4 py-2 text-gray-700"></td>
+                                <td x-text="db.schema" class="whitespace-nowrap px-4 py-2 text-gray-700"></td>
+                                <td x-text="db.username" class="whitespace-nowrap px-4 py-2 text-gray-700"></td>
                                 <td class="whitespace-nowrap px-4 py-2 text-gray-700 w-56">
                                     <div class="relative border-2 rounded-xl">
                                         <input type="file" id="file"
@@ -182,11 +182,23 @@
                                             accept=".pcap" />
                                     </div>
                                 </td>
-                                <td class="whitespace-nowrap text-gray-700">
-                                    <a class="my-2 mx-4 px-2 py-2 inline-block rounded border border-blue-500 text-sm font-medium text-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring active:bg-indigo-500"
+                                <td class="whitespace-nowrap text-gray-700 flex items-center">
+                                    <a class="my-2 ml-4 px-2 py-2 inline-block rounded border border-blue-500 text-sm font-medium text-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring active:bg-indigo-500"
                                         href="#">
                                         parse
                                     </a>
+                                    <a class="my-2 ml-2 px-2 py-2 inline-block rounded border border-blue-500 text-sm font-medium text-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring active:bg-indigo-500"
+                                        href="#">
+                                        edit
+                                    </a>
+                                    <svg t="1722251906995" x-on:click="dbs.splice(index,1)"
+                                        x-on:mousemove="db.deleteFlag=true" x-on:mouseout="db.deleteFlag=false"
+                                        class="icon ml-1 w-6 h-6" viewBox="0 0 1024 1024" version="1.1"
+                                        xmlns="http://www.w3.org/2000/svg" p-id="4576" width="32" height="32">
+                                        <path
+                                            d="M533.333333 42.666667a213.418667 213.418667 0 0 1 209.066667 170.666666H896v85.333334h-384V213.333333h142.08A128.042667 128.042667 0 0 0 405.333333 256v42.666667H170.666667V213.333333h153.6a213.418667 213.418667 0 0 1 209.066666-170.666666zM384 426.666667h85.333333v341.333333H384v-341.333333z m344.32-42.666667h81.706667l3.626666 469.333333c0 70.656-57.6 128-128 128h-341.333333c-70.528 0-128-57.216-128-128V384h85.333333v469.333333c0 23.552 19.2 42.666667 42.666667 42.666667h341.333333c23.381333 0 42.666667-19.2 42.666667-42.666667V384zM554.666667 426.666667h85.333333v341.333333h-85.333333v-341.333333z"
+                                            fill="#d81e06" p-id="4577"></path>
+                                    </svg>
                                 </td>
                             </tr>
                         </template>
@@ -195,38 +207,175 @@
             </div>
         </div>
         <!-- 风险扫描内容区  -->
-        <div x-show="!showActive">
-            <h1>风险扫描</h1>
-        </div>
-    </div>
+        <div x-show="showActive" class="flex flex-col mx-auto mt-4">
+            <div class="">
+                <label for="HeadlineAct" class="block text-sm font-medium text-gray-900">Recent 5 Parse</label>
 
-    <script>
-        function data() {
-            return {
-                dbs: [
-                    {
-                        ip: '42.193.103.225',
-                        port: '3307',
-                        schema: 'orange',
-                        username: 'orange'
-                    },
-                    {
-                        ip: '152.32.175.57',
-                        port: '3307',
-                        schema: 'root',
-                        username: 'mysql'
-                    },
-                    {
-                        ip: '42.193.103.225',
-                        port: '3307',
-                        schema: 'orange',
-                        username: 'orange'
-                    }
-                ],
-                showActive: true
+                <select name="HeadlineAct" id="HeadlineAct"
+                    class="mt-1.5 w-full rounded-lg border-2 border-gray-500 text-gray-700 sm:text-sm py-3 px-2">
+                    <option value="">Please select</option>
+                    <template x-for="(recent,index) in recentTimes" :key="index">
+                        <option value="recent" x-model="recent" x-text="recent"></option>
+                    </template>
+                </select>
+            </div>
+            
+            <div class="overflow-x-auto mt-4">
+                <div class="rounded-lg border border-gray-200">
+                    <div class="overflow-x-auto rounded-t-lg">
+                      <table class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
+                        <thead class="ltr:text-left rtl:text-right">
+                          <tr>
+                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Name</th>
+                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Date of Birth</th>
+                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Role</th>
+                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Salary</th>
+                          </tr>
+                        </thead>
+                  
+                        <tbody class="divide-y divide-gray-200">
+                          <tr>
+                            <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">John Doe</td>
+                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">24/05/1995</td>
+                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">Web Developer</td>
+                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">$120,000</td>
+                          </tr>
+                  
+                          <tr>
+                            <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Jane Doe</td>
+                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">04/11/1980</td>
+                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">Web Designer</td>
+                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">$100,000</td>
+                          </tr>
+                  
+                          <tr>
+                            <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Gary Barlow</td>
+                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">24/05/1995</td>
+                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">Singer</td>
+                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">$20,000</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  
+                    <div class="rounded-b-lg border-t border-gray-200 px-4 py-2">
+                      <ol class="flex justify-end gap-1 text-xs font-medium">
+                        <li>
+                          <a
+                            href="#"
+                            class="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180"
+                          >
+                            <span class="sr-only">Prev Page</span>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="h-3 w-3"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                clip-rule="evenodd"
+                              />
+                            </svg>
+                          </a>
+                        </li>
+                  
+                        <li>
+                          <a
+                            href="#"
+                            class="block size-8 rounded border border-gray-100 bg-white text-center leading-8 text-gray-900"
+                          >
+                            1
+                          </a>
+                        </li>
+                  
+                        <li class="block size-8 rounded border-blue-600 bg-blue-600 text-center leading-8 text-white">
+                          2
+                        </li>
+                  
+                        <li>
+                          <a
+                            href="#"
+                            class="block size-8 rounded border border-gray-100 bg-white text-center leading-8 text-gray-900"
+                          >
+                            3
+                          </a>
+                        </li>
+                  
+                        <li>
+                          <a
+                            href="#"
+                            class="block size-8 rounded border border-gray-100 bg-white text-center leading-8 text-gray-900"
+                          >
+                            4
+                          </a>
+                        </li>
+                  
+                        <li>
+                          <a
+                            href="#"
+                            class="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180"
+                          >
+                            <span class="sr-only">Next Page</span>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              class="h-3 w-3"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                            >
+                              <path
+                                fill-rule="evenodd"
+                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                clip-rule="evenodd"
+                              />
+                            </svg>
+                          </a>
+                        </li>
+                      </ol>
+                    </div>
+                  </div>
+            </div>
+          
+            
+        </div>
+
+        <script>
+            function data() {
+                return {
+                    dbs: [
+                        {
+                            ip: '42.193.103.225',
+                            port: '3307',
+                            schema: 'orange',
+                            username: 'orange',
+                            deleteFlag: false,
+                        },
+                        {
+                            ip: '152.32.175.57',
+                            port: '3307',
+                            schema: 'root',
+                            username: 'mysql',
+                            deleteFlag: false,
+                        },
+                        {
+                            ip: '42.193.103.225',
+                            port: '3307',
+                            schema: 'orange',
+                            username: 'orange',
+                            deleteFlag: false,
+                        }
+                    ],
+                    recentTimes: [
+                        "20240730-00:00:00",
+                        "20240731-11:11:11",
+                        "20240730-22:22:22",
+                        "20240730-33:33:33",
+                    ],
+                    showActive: true
+                }
             }
-        }
-    </script>
+        </script>
 </body>
 
 </html>
