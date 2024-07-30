@@ -6,8 +6,9 @@
     <meta name="viewport" content="width=device-width,  
                    initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="./static/js/alpine.min.js"></script>
-
+    <!-- <script defer src="./static/js/alpine.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@ryangjchandler/alpine-clipboard@2.x.x/dist/alpine-clipboard.js" defer></script> -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 
 <body class="h-full font-mono flex flex-col">
@@ -58,7 +59,7 @@
         </div>
 
         <!-- 数据连接内容区 -->
-        <div x-show="!showActive" class="flex flex-col mx-auto mt-8">
+        <div x-show="!showActive" class="flex flex-col mx-auto mt-8 w-4/5">
             <!-- 数据库连接信息 -->
             <div class="flex space-x-4">
                 <div>
@@ -155,14 +156,14 @@
             <!-- 数据库列表信息 -->
             <div class="overflow-x-auto mt-8">
                 <table class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
-                    <thead class="text-left ltr:text-left rtl:text-right">
+                    <thead class="text-left ltr:text-left rtl:text-right font-bold text-gray-900">
                         <tr>
-                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">ip</th>
-                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">port</th>
-                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">schema</th>
-                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">username</th>
-                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">file</th>
-                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">operate</th>
+                            <th class="whitespace-nowrap px-4 py-2">ip</th>
+                            <th class="whitespace-nowrap px-4 py-2">port</th>
+                            <th class="whitespace-nowrap px-4 py-2">schema</th>
+                            <th class="whitespace-nowrap px-4 py-2">username</th>
+                            <th class="whitespace-nowrap px-4 py-2">file</th>
+                            <th class="whitespace-nowrap px-4 py-2">operate</th>
                         </tr>
                     </thead>
 
@@ -206,8 +207,10 @@
                 </table>
             </div>
         </div>
+
         <!-- 风险扫描内容区  -->
-        <div x-show="showActive" class="flex flex-col mx-auto mt-4 w-5/6">
+        <div x-show="showActive" class="flex flex-col mx-auto mt-4 w-4/5">
+            <!-- 风险选择区  -->
             <div class="w-44">
                 <label for="HeadlineAct" class="block text-sm font-medium text-gray-900">Recent 5 Parse</label>
 
@@ -219,125 +222,88 @@
                     </template>
                 </select>
             </div>
-            
-            <div class="overflow-x-auto mt-4">
-                <div class="rounded-lg border border-gray-200">
-                    <div class="overflow-x-auto rounded-t-lg">
-                      <table class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
-                        <thead class="ltr:text-left rtl:text-right">
-                          <tr>
-                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Name</th>
-                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Date of Birth</th>
-                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Role</th>
-                            <th class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Salary</th>
-                          </tr>
+
+            <!-- 风险SQL列表 -->
+
+            <div class="rounded-lg border border-gray-200 mt-4">
+                <div class="overflow-x-auto rounded-t-lg">
+                    <table class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
+                        <thead class="text-left ltr:text-left rtl:text-right font-bold text-gray-900">
+                            <tr>
+                                <th class="whitespace-nowrap px-4 py-2">Sql Content</th>
+                                <th class="whitespace-nowrap px-4 py-2">Risk</th>
+                                <th class="whitespace-nowrap px-4 py-2">Count</th>
+                                <th class="whitespace-nowrap px-4 py-2">Max Time(ms)</th>
+                            </tr>
                         </thead>
-                  
-                        <tbody class="divide-y divide-gray-200">
-                          <tr>
-                            <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">John Doe</td>
-                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">24/05/1995</td>
-                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">Web Developer</td>
-                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">$120,000</td>
-                          </tr>
-                  
-                          <tr>
-                            <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Jane Doe</td>
-                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">04/11/1980</td>
-                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">Web Designer</td>
-                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">$100,000</td>
-                          </tr>
-                  
-                          <tr>
-                            <td class="whitespace-nowrap px-4 py-2 font-medium text-gray-900">Gary Barlow</td>
-                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">24/05/1995</td>
-                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">Singer</td>
-                            <td class="whitespace-nowrap px-4 py-2 text-gray-700">$20,000</td>
-                          </tr>
+                        <tbody class="divide-y divide-gray-200 text-gray-700">
+                            <template x-for="(sql,index) in sqls.result" :key="index">
+                                <tr>
+                                    <td x-text="sql.content" x-model="sql.connect" class="whitespace-nowrap px-4 py-4 text-wrap"></td>
+                                    <td x-text="sql.risk" class="whitespace-nowrap px-4 py-2"></td>
+                                    <td x-text="sql.count" class="whitespace-nowrap px-4 py-2"></td>
+                                    <td x-text="sql.maxTakeTime" class="whitespace-nowrap px-4 py-2"></td>
+                                </tr>
+                            </template>
                         </tbody>
-                      </table>
-                    </div>
-                  
-                    <div class="rounded-b-lg border-t border-gray-200 px-4 py-2">
-                      <ol class="flex justify-end gap-1 text-xs font-medium">
+                    </table>
+                </div>
+
+                <div class="rounded-b-lg border-t border-gray-200 px-4 py-2">
+                    <ol class="flex justify-end gap-1 text-xs font-medium">
                         <li>
-                          <a
-                            href="#"
-                            class="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180"
-                          >
-                            <span class="sr-only">Prev Page</span>
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              class="h-3 w-3"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                            >
-                              <path
-                                fill-rule="evenodd"
-                                d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-                                clip-rule="evenodd"
-                              />
-                            </svg>
-                          </a>
+                            <a href="#"
+                                class="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
+                                <span class="sr-only">Prev Page</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </a>
                         </li>
-                  
+
                         <li>
-                          <a
-                            href="#"
-                            class="block size-8 rounded border border-gray-100 bg-white text-center leading-8 text-gray-900"
-                          >
-                            1
-                          </a>
+                            <a href="#"
+                                class="block size-8 rounded border border-gray-100 bg-white text-center leading-8 text-gray-900">
+                                1
+                            </a>
                         </li>
-                  
+
                         <li class="block size-8 rounded border-blue-600 bg-blue-600 text-center leading-8 text-white">
-                          2
+                            2
                         </li>
-                  
+
                         <li>
-                          <a
-                            href="#"
-                            class="block size-8 rounded border border-gray-100 bg-white text-center leading-8 text-gray-900"
-                          >
-                            3
-                          </a>
+                            <a href="#"
+                                class="block size-8 rounded border border-gray-100 bg-white text-center leading-8 text-gray-900">
+                                3
+                            </a>
                         </li>
-                  
+
                         <li>
-                          <a
-                            href="#"
-                            class="block size-8 rounded border border-gray-100 bg-white text-center leading-8 text-gray-900"
-                          >
-                            4
-                          </a>
+                            <a href="#"
+                                class="block size-8 rounded border border-gray-100 bg-white text-center leading-8 text-gray-900">
+                                4
+                            </a>
                         </li>
-                  
+
                         <li>
-                          <a
-                            href="#"
-                            class="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180"
-                          >
-                            <span class="sr-only">Next Page</span>
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              class="h-3 w-3"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                            >
-                              <path
-                                fill-rule="evenodd"
-                                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                                clip-rule="evenodd"
-                              />
-                            </svg>
-                          </a>
+                            <a href="#"
+                                class="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
+                                <span class="sr-only">Next Page</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </a>
                         </li>
-                      </ol>
-                    </div>
-                  </div>
+                    </ol>
+                </div>
             </div>
-          
-            
         </div>
 
         <script>
@@ -372,6 +338,72 @@
                         "20240730-22:22:22",
                         "20240730-33:33:33",
                     ],
+                    sqls: {
+                        totalPages: 3,
+                        totalRecords: 21,
+                        result: [
+                            {
+                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
+                                risk: 2,
+                                count: 2,
+                                maxTakeTime: 8
+                            },
+                            {
+                                content: "SELECT `action_id`, `action_name`, `action_description`, `action_type_id`, `action_picture`, `part_id` FROM `action` WHERE `action_id` = 3 LIMIT 1",
+                                risk: 2,
+                                count: 2,
+                                maxTakeTime: 8
+                            },
+                            {
+                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
+                                risk: 2,
+                                count: 2,
+                                maxTakeTime: 8
+                            },
+                            {
+                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
+                                risk: 2,
+                                count: 2,
+                                maxTakeTime: 8
+                            },
+                            {
+                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
+                                risk: 2,
+                                count: 2,
+                                maxTakeTime: 8
+                            },
+                            {
+                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
+                                risk: 2,
+                                count: 2,
+                                maxTakeTime: 8
+                            },
+                            {
+                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
+                                risk: 2,
+                                count: 2,
+                                maxTakeTime: 8
+                            },
+                            {
+                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
+                                risk: 2,
+                                count: 2,
+                                maxTakeTime: 8
+                            },
+                            {
+                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
+                                risk: 2,
+                                count: 2,
+                                maxTakeTime: 8
+                            },
+                            {
+                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
+                                risk: 2,
+                                count: 2,
+                                maxTakeTime: 8
+                            }
+                        ],
+                    },
                     showActive: true
                 }
             }
