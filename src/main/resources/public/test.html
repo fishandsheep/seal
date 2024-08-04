@@ -224,7 +224,6 @@
             </div>
 
             <!-- 风险SQL列表 -->
-
             <div class="rounded-lg border border-gray-200 mt-4">
                 <div class="overflow-x-auto rounded-t-lg">
                     <table class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
@@ -239,7 +238,8 @@
                         <tbody class="divide-y divide-gray-200 text-gray-700">
                             <template x-for="(sql,index) in sqls.result" :key="index">
                                 <tr>
-                                    <td x-text="sql.content" x-model="sql.connect" class="whitespace-nowrap px-4 py-4 text-wrap"></td>
+                                    <td x-text="sql.content" x-model="sql.connect"
+                                        class="whitespace-nowrap px-4 py-4 text-wrap"></td>
                                     <td x-text="sql.risk" class="whitespace-nowrap px-4 py-2"></td>
                                     <td x-text="sql.count" class="whitespace-nowrap px-4 py-2"></td>
                                     <td x-text="sql.maxTakeTime" class="whitespace-nowrap px-4 py-2"></td>
@@ -251,7 +251,7 @@
 
                 <div class="rounded-b-lg border-t border-gray-200 px-4 py-2">
                     <ol class="flex justify-end gap-1 text-xs font-medium">
-                        <li>
+                        <li x-on:click="nextPage(-1)">
                             <a href="#"
                                 class="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
                                 <span class="sr-only">Prev Page</span>
@@ -264,32 +264,16 @@
                             </a>
                         </li>
 
-                        <li>
-                            <a href="#"
-                                class="block size-8 rounded border border-gray-100 bg-white text-center leading-8 text-gray-900">
-                                1
-                            </a>
-                        </li>
+                        <template x-for="page in sqls.totalPages" :key="page">
+                            <li x-on:click="changePage(page)" class="border-gray-100 bg-white text-gray-900">
+                                <a href="#" x-text="page"
+                                    :class="{ 'border-blue-600 bg-blue-600 text-white' : currentPage == page}"
+                                    class="block size-8 rounded border text-center leading-8 ">
+                                </a>
+                            </li>
+                        </template>
 
-                        <li class="block size-8 rounded border-blue-600 bg-blue-600 text-center leading-8 text-white">
-                            2
-                        </li>
-
-                        <li>
-                            <a href="#"
-                                class="block size-8 rounded border border-gray-100 bg-white text-center leading-8 text-gray-900">
-                                3
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="#"
-                                class="block size-8 rounded border border-gray-100 bg-white text-center leading-8 text-gray-900">
-                                4
-                            </a>
-                        </li>
-
-                        <li>
+                        <li x-on:click="nextPage(1)">
                             <a href="#"
                                 class="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
                                 <span class="sr-only">Next Page</span>
@@ -309,6 +293,8 @@
         <script>
             function data() {
                 return {
+                    currentPage: 1,
+                    showActive: true,
                     dbs: [
                         {
                             ip: '42.193.103.225',
@@ -404,8 +390,16 @@
                             }
                         ],
                     },
-                    showActive: true
+                    changePage(index) {
+                        this.currentPage = index
+                    },
+                    nextPage(count) {
+                        if ((this.currentPage > 1 && count == -1) || (this.currentPage < this.sqls.totalPages && count == 1)) {
+                            this.currentPage = this.currentPage + count;
+                        }
+                    }
                 }
+
             }
         </script>
 </body>
