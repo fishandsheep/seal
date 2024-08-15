@@ -14,13 +14,12 @@ public class DbManager {
 
     public static void add(Context ctx) throws SealException {
         var db = ctx.bodyAsClass(Db.class);
-        DbFactory.getDbVersion(db);
         var data = StorageManagerFactory.data();
-        boolean b = data.dbs().all().stream().anyMatch(db1 -> db1.getUrl().concat(String.valueOf(db1.getPort())).concat(db1.getSchema()).concat(db1.getUsername())
-                .equals(db.getUrl().concat(String.valueOf(db.getPort())).concat(db.getSchema()).concat(db.getUsername())));
+        boolean b = data.dbs().all().stream().anyMatch(db1 -> db1.getId().equals(db.getId()));
         if (b) {
             throw new SealException(ErrorEnum.MYSQL_CONNECTION_EXIST);
         }
+        DbFactory.getDbVersion(db);
         data.dbs().add(db);
         db.setPassword(null);
         ctx.json(new Result(db));
@@ -37,8 +36,7 @@ public class DbManager {
         var db = ctx.bodyAsClass(Db.class);
         DbFactory.getDbVersion(db);
         var data = StorageManagerFactory.data();
-        boolean b = data.dbs().all().stream().anyMatch(db1 -> db1.getUrl().concat(String.valueOf(db1.getPort())).concat(db1.getSchema()).concat(db1.getUsername())
-                .equals(db.getUrl().concat(String.valueOf(db.getPort())).concat(db.getSchema()).concat(db.getUsername())));
+        boolean b = data.dbs().all().stream().anyMatch(db1 -> db1.getId().equals(db.getId()));
         if (b) {
             throw new SealException(ErrorEnum.MYSQL_CONNECTION_EXIST);
         }
