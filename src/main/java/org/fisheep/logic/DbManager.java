@@ -2,6 +2,7 @@ package org.fisheep.logic;
 
 import io.javalin.http.Context;
 import org.fisheep.bean.Db;
+import org.fisheep.bean.data.Dbs;
 import org.fisheep.common.ErrorEnum;
 import org.fisheep.common.Result;
 import org.fisheep.common.SealException;
@@ -27,8 +28,9 @@ public class DbManager {
 
     public static void delete(Context ctx) {
         var id = Integer.parseInt(ctx.pathParam("id"));
-        StorageManagerFactory.data().dbs().delete(id);
-        ctx.json(new Result());
+        Dbs dbs = StorageManagerFactory.data().dbs();
+        dbs.delete(id);
+        ctx.json(new Result(dbs.all()));
     }
 
     public static void update(Context ctx) throws SealException {
