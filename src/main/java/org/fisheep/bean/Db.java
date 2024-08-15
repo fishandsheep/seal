@@ -24,7 +24,7 @@ public class Db {
     private String version;
 
     public String getId() {
-        return this.url + ":" + this.port + ":" + this.schema;
+        return this.url + ":" + this.port + ":" + this.schema + ":" + this.username;
     }
 
 }

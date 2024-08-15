@@ -1,47 +1,54 @@
 package org.fisheep;
 
 import io.javalin.Javalin;
-import io.javalin.http.UploadedFile;
 import io.javalin.http.staticfiles.Location;
-import org.fisheep.bean.Db;
-import org.fisheep.bean.SqlStatement;
-import org.fisheep.bean.data.Data;
-import org.fisheep.common.PageResult;
-import org.fisheep.logic.DbFactory;
-import org.fisheep.util.PcapUtil;
+import org.fisheep.common.Result;
+import org.fisheep.common.SealException;
+import org.fisheep.logic.DbManager;
 
-import java.util.List;
+import static io.javalin.apibuilder.ApiBuilder.*;
 
 public class SealApplication {
 
     public static void main(String[] args) {
-        final Data data = new Data().data();
-        var app = Javalin.create(config -> {
-            config.staticFiles.add("/public", Location.CLASSPATH);
-        }).start(7070);
+        var app = Javalin
+                .create(config -> {
+                    config.staticFiles.add("/public", Location.CLASSPATH);
+                    config.router
+                            .apiBuilder(() -> path("/db", () -> {
+                                get(DbManager::all);
+                                post(DbManager::add);
+                                path("/{id}", () -> {
+                                    get(DbManager::one);
+                                    patch(DbManager::update);
+                                    delete(DbManager::delete);
+                                });
+                            }));
+                })
+                .exception(SealException.class, (e, ctx) -> {
+                    ctx.json(new Result(e.getCode(), e.getMsg()));
+                })
+                .start(7070);
 
-        app.post("/connect", ctx -> {
-            Db db = ctx.bodyAsClass(Db.class);
-            DbFactory.getDbVersion(db);
-            db.setPassword(null);
-            data.dbs().add(db.getId(), db);
-            ctx.json(db);
+        app.exception(SealException.class, (e, ctx) -> {
+            ctx.json(new Result(e.getCode(), e.getMsg()));
         });
 
-        app.post("/upload", ctx -> {
-            UploadedFile uploadedFile = ctx.uploadedFile("file");
-            String id = ctx.formParam("id");
-            Db db = DbFactory.dbConfigs.get(id);
-            List<SqlStatement> results = PcapUtil.parseLogFile(uploadedFile, db.getPort());
-            data.sqlStatements().add(id, results);
-            List<SqlStatement> sqlStatements = data.sqlStatements().all(id);
-            PageResult<SqlStatement> pageResult = new PageResult<>(sqlStatements, Integer.parseInt(ctx.formParam("currentPage")), Integer.parseInt(ctx.formParam("pageSize")));
-            //TODO 异步？
-//            List<SqlStatement> subList = sqlStatements.subList(0, 10);
-            //TODO 增加风险解析方法
-            ctx.json(pageResult);
-        });
-
+        //上传文件
+//        app.post("/upload", ctx -> {
+//            var uploadedFile = ctx.uploadedFile("file");
+//            var id = ctx.formParam("id");
+//            var db = DbFactory.dbConfigs.get(id);
+//            var results = PcapUtil.parseLogFile(uploadedFile, db.getPort());
+//            data.sqlStatements().add(id, results);
+//            var sqlStatements = data.sqlStatements().all(id);
+//            sqlStatements.forEach(sqlStatement -> System.out.println(sqlStatement.getContent() + ";"));
+//            PageResult<SqlStatement> pageResult = new PageResult<>(sqlStatements, Integer.parseInt(ctx.formParam("currentPage")), Integer.parseInt(ctx.formParam("pageSize")));
+//            //TODO 异步？
+////            List<SqlStatement> subList = sqlStatements.subList(0, 10);
+//            //TODO 增加风险解析方法
+//            ctx.json(pageResult);
+//        });
 
         app.post("/test", ctx -> {
             Main.main(null);

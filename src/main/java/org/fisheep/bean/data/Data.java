@@ -1,7 +1,8 @@
 package org.fisheep.bean.data;
 
-import org.fisheep.common.StorageManagerFactory;
-
+/**
+ * @author BigOrange
+ */
 public class Data {
 
     private final SqlStatements sqlStatements = new SqlStatements();
@@ -16,7 +17,4 @@ public class Data {
         return this.dbs;
     }
 
-    public Data data() {
-        return (Data) StorageManagerFactory.getInstance().root();
-    }
 }
