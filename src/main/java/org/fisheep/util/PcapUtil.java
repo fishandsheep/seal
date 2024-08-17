@@ -6,6 +6,8 @@ import io.kaitai.struct.ByteBufferKaitaiStream;
 import org.apache.commons.lang3.ArrayUtils;
 import org.fisheep.bean.SqlStatement;
 import org.fisheep.bean.TcpSqlInfo;
+import org.fisheep.common.ErrorEnum;
+import org.fisheep.common.SealException;
 import org.fisheep.kaitai.*;
 
 import java.io.IOException;
@@ -26,10 +28,14 @@ public class PcapUtil {
     private static final byte[] UPPER_SELECT_FLAG = {3, 0, 1, 115, 101, 108, 101, 99, 116};
     private static final byte[] LONG_SQL_PRE_FLAG = {0x01, 0x01, 0x08, 0x0a};
 
-    public static List<SqlStatement> parseLogFile(UploadedFile file, int dstPort) throws IOException {
+    public static List<SqlStatement> parseLogFile(UploadedFile file, int dstPort) throws SealException {
         List<SqlStatement> sqlStatements = new ArrayList<>();
-
-        byte[] bytes = file.content().readAllBytes();
+        byte[] bytes;
+        try {
+            bytes = file.content().readAllBytes();
+        } catch (IOException e) {
+            throw new SealException(ErrorEnum.FILE_READ_FAIL);
+        }
         Pcap pcap = new Pcap(new ByteBufferKaitaiStream(bytes));
         ArrayList<Pcap.Packet> packets = pcap.packets();
         if (packets.isEmpty()) {

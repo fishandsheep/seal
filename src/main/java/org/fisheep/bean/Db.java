@@ -5,6 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
+/**
+ * BigOrange
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -24,7 +29,8 @@ public class Db {
     private String version;
 
     public String getId() {
-        return this.url + ":" + this.port + ":" + this.schema + ":" + this.username;
+        return this.url + ":" + this.port + ":" + this.schema;
     }
 
+    private List<String> timestamps;
 }

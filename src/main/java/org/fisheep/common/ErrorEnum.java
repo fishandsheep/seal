@@ -18,7 +18,9 @@ public enum ErrorEnum {
 
     MYSQL_LOW_VERSION(10003, "the database version cannot be earlier than 8.0"),
 
-    MYSQL_CONNECTION_EXIST(10004, "the database connection already exists");
+    MYSQL_CONNECTION_EXIST(10004, "the database connection already exists"),
+
+    FILE_READ_FAIL(20001, "failed to read the file");
 
     private final Integer code;
 

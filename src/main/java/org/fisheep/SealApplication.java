@@ -14,25 +14,23 @@ public class SealApplication {
         var app = Javalin
                 .create(config -> {
                     config.staticFiles.add("/public", Location.CLASSPATH);
+                    config.requestLogger.http((ctx, ms) ->
+                            System.out.println(ctx.path() + "接口耗时："+ ms + "ms"));
                     config.router
                             .apiBuilder(() -> path("/db", () -> {
                                 get(DbManager::all);
                                 post(DbManager::add);
                                 path("/{id}", () -> {
-                                    get(DbManager::one);
-                                    patch(DbManager::update);
                                     delete(DbManager::delete);
                                 });
-                            }));
+                            }))
+                        .apiBuilder(() -> path("/upload", () ->
+                                post(DbManager::upload)));
                 })
                 .exception(SealException.class, (e, ctx) -> {
                     ctx.json(new Result(e.getCode(), e.getMsg()));
                 })
                 .start(7070);
-
-        app.exception(SealException.class, (e, ctx) -> {
-            ctx.json(new Result(e.getCode(), e.getMsg()));
-        });
 
         //上传文件
 //        app.post("/upload", ctx -> {

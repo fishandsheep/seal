@@ -5,6 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
+/**
+ * BigOrange
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -33,5 +38,9 @@ public class SqlStatement {
      * TODO 不准确，获取准确的sql耗时，需通过数据库日志统计
      */
     private long maxTakeTime;
+
+    private Struct explainPlan;
+
+    private List<Struct> explainRisk;
 
 }
