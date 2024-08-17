@@ -21,7 +21,7 @@
         <img class="h-20 rounded-full border ml-4" src="./static/img/seal.svg"></img>
     </div>
 
-    <div class="flex flex-1" x-data="data()" x-init="getAllDbs()" >
+    <div class="flex flex-1" x-data="data()" x-init="getAllDbs()">
 
         <!-- 侧边栏 -->
         <div class="flex flex-col justify-between border-e bg-gray-200 w-44">
@@ -107,7 +107,7 @@
                 <div>
                     <label for="username"
                         class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600">
-                        <input x-model="db.username"  type="username" id="ip"
+                        <input x-model="db.username" type="username" id="ip"
                             class="ml-2 h-10 peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
                             placeholder="username" />
 
@@ -134,17 +134,19 @@
             </div>
             <!-- 连接数据库 -->
             <div class="flex space-x-4 mt-4 ">
-                <a @click="connectDb" class="inline-block rounded border border-blue-500 px-10 py-3 text-sm font-medium text-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring active:bg-indigo-500"
+                <a @click="connectDb"
+                    class="inline-block rounded border border-blue-500 px-10 py-3 text-sm font-medium text-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring active:bg-indigo-500"
                     href="#">
                     connect
                 </a>
                 <div>
                     <label for="version"
                         class="relative block overflow-hidden border-b border-gray-200 bg-transparent pt-3 focus-within:border-blue-600">
-                        <input x-model="db.version" type="email" id="version" placeholder="version"
-                            class="peer h-8 w-full border-none bg-transparent p-0 placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
+                        <input x-bind:class="resCode == 200 ? 'text-green-600 ':'text-red-600'" x-model="db.version"
+                            type="email" id="version" placeholder="version"
+                            class="peer h-8 w-96 border-none bg-transparent p-0 placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
                             disabled />
-                        <span x-bind:class="{'text-green-400': db.code == 200}"
+                        <span
                             class="absolute start-0 top-2 -translate-y-1/2 text-xs transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-2 peer-focus:text-xs">
                             Version
                         </span>
@@ -162,6 +164,7 @@
                             <th class="whitespace-nowrap px-4 py-2">port</th>
                             <th class="whitespace-nowrap px-4 py-2">schema</th>
                             <th class="whitespace-nowrap px-4 py-2">username</th>
+                            <th class="whitespace-nowrap px-4 py-2">version</th>
                             <th class="whitespace-nowrap px-4 py-2">file</th>
                             <th class="whitespace-nowrap px-4 py-2">operate</th>
                         </tr>
@@ -176,6 +179,7 @@
                                 <td x-text="db.port" class="whitespace-nowrap px-4 py-2 text-gray-700"></td>
                                 <td x-text="db.schema" class="whitespace-nowrap px-4 py-2 text-gray-700"></td>
                                 <td x-text="db.username" class="whitespace-nowrap px-4 py-2 text-gray-700"></td>
+                                <td x-text="db.version" class="whitespace-nowrap px-4 py-2 text-gray-700"></td>
                                 <td class="whitespace-nowrap px-4 py-2 text-gray-700 w-56">
                                     <div class="relative border-2 rounded-xl">
                                         <input type="file" id="file"
@@ -188,10 +192,10 @@
                                         href="#">
                                         parse
                                     </a>
-                                    <svg t="1722251906995" x-on:click="delDb(index)"
-                                        x-on:mousemove="db.deleteFlag=true" x-on:mouseout="db.deleteFlag=false"
-                                        class="icon ml-1 w-6 h-6" viewBox="0 0 1024 1024" version="1.1"
-                                        xmlns="http://www.w3.org/2000/svg" p-id="4576" width="32" height="32">
+                                    <svg t="1722251906995" x-on:click="delDb(index)" x-on:mousemove="db.deleteFlag=true"
+                                        x-on:mouseout="db.deleteFlag=false" class="icon ml-1 w-6 h-6"
+                                        viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                                        p-id="4576" width="32" height="32">
                                         <path
                                             d="M533.333333 42.666667a213.418667 213.418667 0 0 1 209.066667 170.666666H896v85.333334h-384V213.333333h142.08A128.042667 128.042667 0 0 0 405.333333 256v42.666667H170.666667V213.333333h153.6a213.418667 213.418667 0 0 1 209.066666-170.666666zM384 426.666667h85.333333v341.333333H384v-341.333333z m344.32-42.666667h81.706667l3.626666 469.333333c0 70.656-57.6 128-128 128h-341.333333c-70.528 0-128-57.216-128-128V384h85.333333v469.333333c0 23.552 19.2 42.666667 42.666667 42.666667h341.333333c23.381333 0 42.666667-19.2 42.666667-42.666667V384zM554.666667 426.666667h85.333333v341.333333h-85.333333v-341.333333z"
                                             fill="#d81e06" p-id="4577"></path>
@@ -299,7 +303,7 @@
                     },
 
                     async delDb(index) {
-                        var res = await (await fetch('/db/'+index, {
+                        var res = await (await fetch('/db/' + index, {
                             method: 'DELETE'
                         })).json();
                         //console.log(res);
@@ -311,19 +315,20 @@
                             body: JSON.stringify(this.db)
                         })).json();
                         //console.log(res);
-                        this.db.code == res.code;
-                        if(res.code == 200){
+                        this.resCode = res.code;
+                        if (res.code == 200) {
                             this.db.version = res.result.version;
                             this.getAllDbs();
-                        }else{
+                        } else {
                             this.db.version = res.message;
                         }
                     },
-                    db :{},
+                    db: {},
+                    resCode: 200,
                     currentPage: 1,
                     showActive: true,
                     dbs: [
-                        
+
                     ],
                     recentTimes: [
                         "20240730-00:00:00",

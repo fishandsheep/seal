@@ -4,7 +4,7 @@
 ### 涉及技术
 | 框架            | 技术           | 官网                       |
 |---------------|--------------|--------------------------|
-| css           | daisyui.css  | https://daisyui.com/     |
+| css           | hyperui      | https://www.hyperui.dev/ |
 | js            | alpine.js    | https://alpinejs.dev/    |
 | web           | javalin      | https://javalin.io/      |
 | database      | eclipsestore | https://eclipsestore.io/ |
