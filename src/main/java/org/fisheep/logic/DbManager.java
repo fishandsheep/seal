@@ -30,8 +30,7 @@ public class DbManager {
         }
         getDbVersion(db);
         dbs.add(db);
-        var all = dbs.all();
-        all.forEach(db1 -> db1.setPassword(null));
+        var all = dbs.allNoPassword();
         ctx.json(new Result(all));
     }
 
@@ -39,14 +38,12 @@ public class DbManager {
         var id = Integer.parseInt(ctx.pathParam("id"));
         var dbs = StorageManagerFactory.data().dbs();
         dbs.delete(id);
-        var all = dbs.all();
-        all.forEach(db -> db.setPassword(null));
+        var all = dbs.allNoPassword();
         ctx.json(new Result(all));
     }
 
     public static void all(Context ctx) {
-        var all = StorageManagerFactory.data().dbs().all();
-        all.forEach(db -> db.setPassword(null));
+        var all = StorageManagerFactory.data().dbs().allNoPassword();
         ctx.json(new Result(all));
     }
 
@@ -82,8 +79,7 @@ public class DbManager {
 
     public static DataSource createDataSource(Db db) {
         HikariConfig config = new HikariConfig();
-        String jdbcUrl = String.format("jdbc:mysql://%s:%d/%s",
-                db.getUrl(), db.getPort(), db.getSchema());
+        String jdbcUrl = String.format("jdbc:mysql://%s:%d/%s", db.getUrl(), db.getPort(), db.getSchema());
         config.setJdbcUrl(jdbcUrl);
         config.setUsername(db.getUsername());
         config.setPassword(db.getPassword());

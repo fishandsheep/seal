@@ -1,5 +1,6 @@
 package org.fisheep.bean.data;
 
+import org.apache.commons.lang3.SerializationUtils;
 import org.eclipse.serializer.persistence.types.PersistenceStoring;
 import org.fisheep.bean.Db;
 import org.fisheep.common.StorageManagerFactory;
@@ -9,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author BigOrange
@@ -30,15 +32,19 @@ public class Dbs extends ReadWriteLocked {
 //    }
 
     public Db one(int id) {
-        return this.read(() ->
-                this.dbs.get(id)
-        );
+        return this.read(() -> this.dbs.get(id));
     }
 
     public List<Db> all() {
-        return this.read(() ->
-                this.dbs
-        );
+        return this.read(() -> this.dbs);
+    }
+
+    public List<Db> allNoPassword() {
+        return this.read(() -> {
+            List<Db> noPasswordDbs = this.dbs.stream().map(SerializationUtils::clone).collect(Collectors.toList());
+            noPasswordDbs.forEach(db -> db.setPassword(null));
+            return noPasswordDbs;
+        });
     }
 
     public String addTimestamp(int id) {

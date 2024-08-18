@@ -140,15 +140,15 @@
                     connect
                 </a>
                 <div>
-                    <label for="version"
+                    <label for="message"
                         class="relative block overflow-hidden border-b border-gray-200 bg-transparent pt-3 focus-within:border-blue-600">
-                        <input x-bind:class="resCode == 200 ? 'text-green-600 ':'text-red-600'" x-model="db.version"
-                            type="email" id="version" placeholder="version"
+                        <input x-bind:class="resCode == 200 ? 'text-green-600 ':'text-red-600'" x-model="db.message"
+                            type="email" id="message" placeholder="message"
                             class="peer h-8 w-96 border-none bg-transparent p-0 placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
                             disabled />
                         <span
                             class="absolute start-0 top-2 -translate-y-1/2 text-xs transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-2 peer-focus:text-xs">
-                            Version
+                            Message
                         </span>
                     </label>
                 </div>
@@ -184,11 +184,11 @@
                                     <div class="relative border-2 rounded-xl">
                                         <input type="file" id="file"
                                             class="w-full rounded-md border-gray-200 pe-10 shadow-sm sm:text-sm"
-                                            accept=".pcap" />
+                                            x-ref="file" @change="uploadFile = $refs.file.files[0]"  accept=".pcap" />
                                     </div>
                                 </td>
                                 <td class="whitespace-nowrap text-gray-700 flex items-center">
-                                    <a class="my-2 ml-4 px-2 py-2 inline-block rounded border border-blue-500 text-sm font-medium text-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring active:bg-indigo-500"
+                                    <a x-on:click="upload(index)" class="my-2 ml-4 px-2 py-2 inline-block rounded border border-blue-500 text-sm font-medium text-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring active:bg-indigo-500"
                                         href="#">
                                         parse
                                     </a>
@@ -310,18 +310,24 @@
                         this.dbs = res.result;
                     },
                     async connectDb() {
+                        delete this.db.message;
                         var res = await (await fetch('/db', {
                             method: 'POST',
                             body: JSON.stringify(this.db)
                         })).json();
                         //console.log(res);
                         this.resCode = res.code;
-                        if (res.code == 200) {
-                            this.db.version = res.result.version;
-                            this.getAllDbs();
-                        } else {
-                            this.db.version = res.message;
-                        }
+                        this.db.message = res.message;
+                        this.dbs = res.result;
+                    },
+                    async upload(i){
+                        var formData = new FormData();
+                        formData.append('file',this.uploadFile);
+                        formData.append('id', i);
+                        var res = await (await fetch('/upload',{
+                            method: 'POST',
+                            body: formData,
+                        })).json();
                     },
                     db: {},
                     resCode: 200,
@@ -330,6 +336,7 @@
                     dbs: [
 
                     ],
+                    uploadFile:'',
                     recentTimes: [
                         "20240730-00:00:00",
                         "20240731-11:11:11",
