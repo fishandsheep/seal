@@ -5,6 +5,7 @@ import io.javalin.http.staticfiles.Location;
 import org.fisheep.common.Result;
 import org.fisheep.common.SealException;
 import org.fisheep.logic.DbManager;
+import org.fisheep.logic.ExplainManager;
 
 import static io.javalin.apibuilder.ApiBuilder.*;
 
@@ -24,8 +25,8 @@ public class SealApplication {
                                     delete(DbManager::delete);
                                 });
                             }))
-                        .apiBuilder(() -> path("/upload", () ->
-                                post(DbManager::upload)));
+                            .apiBuilder(() -> path("/upload", () ->
+                                post(ExplainManager::upload)));
                 })
                 .exception(SealException.class, (e, ctx) -> {
                     ctx.json(new Result(e.getCode(), e.getMsg()));

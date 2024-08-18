@@ -1,17 +1,20 @@
 package org.fisheep.logic;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.pool.HikariPool;
 import io.javalin.http.Context;
 import org.fisheep.bean.Db;
-import org.fisheep.bean.SqlStatement;
 import org.fisheep.common.ErrorEnum;
 import org.fisheep.common.Result;
 import org.fisheep.common.SealException;
 import org.fisheep.common.StorageManagerFactory;
-import org.fisheep.util.PcapUtil;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * @author BigOrange
@@ -25,7 +28,7 @@ public class DbManager {
         if (b) {
             throw new SealException(ErrorEnum.MYSQL_CONNECTION_EXIST);
         }
-        DbFactory.getDbVersion(db);
+        getDbVersion(db);
         dbs.add(db);
         var all = dbs.all();
         all.forEach(db1 -> db1.setPassword(null));
@@ -47,33 +50,47 @@ public class DbManager {
         ctx.json(new Result(all));
     }
 
-    //todo
-    public static void upload(Context ctx) {
-        var uploadedFile = ctx.uploadedFile("file");
-        var id = Integer.parseInt(ctx.formParam("id"));
-        var data = StorageManagerFactory.data();
-        String timestamp = data.dbs().addTimestamp(id);
-        var db = data.dbs().one(id);
-        data.sqlStatements().add(db.getId() + timestamp, new ArrayList<>());
-        ctx.async(() -> {
-            ctx.result("Task received and is being processed");
-            // 使用CompletableFuture异步处理任务
-            CompletableFuture.runAsync(() -> {
+    public static void getDbVersion(Db db) throws SealException {
+        Connection connection;
+        try {
+            DataSource dataSource = createDataSource(db);
+            connection = dataSource.getConnection();
+        } catch (HikariPool.PoolInitializationException | SQLException e) {
+            throw new SealException(ErrorEnum.MySQL_CONNECTION_FAIL);
+        }
+        try {
+            PreparedStatement statement = connection.prepareStatement("select version() as version");
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                db.setVersion(resultSet.getString("version"));
+            }
+            if (db.getVersion().compareTo("8.0") < 0) {
+                throw new SealException(ErrorEnum.MYSQL_LOW_VERSION);
+            }
+        } catch (SQLException e) {
+            throw new SealException(ErrorEnum.MYSQL_NO_VERSION);
+        } finally {
+            if (connection != null) {
                 try {
-                    var results = PcapUtil.parseLogFile(uploadedFile, db.getPort());
-                    data.sqlStatements().add(db.getId() + timestamp, results);
-
-                } catch (SealException e) {
-                    //todo 加一个状态map
-                    throw new RuntimeException(e);
+                    connection.close();
+                } catch (SQLException e) {
+//                    throw new RuntimeException(e);
                 }
-            });
-            List<SqlStatement> all = data.sqlStatements().all(db.getId() + timestamp);
-            all.forEach(sqlStatement ->
-                    CompletableFuture.runAsync(() -> {
-                        //todo 解析SQL
-                    }));
-        });
-
+            }
+        }
     }
+
+    public static DataSource createDataSource(Db db) {
+        HikariConfig config = new HikariConfig();
+        String jdbcUrl = String.format("jdbc:mysql://%s:%d/%s",
+                db.getUrl(), db.getPort(), db.getSchema());
+        config.setJdbcUrl(jdbcUrl);
+        config.setUsername(db.getUsername());
+        config.setPassword(db.getPassword());
+        config.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        config.setMaximumPoolSize(3);
+        config.setConnectionTimeout(6000);
+        return new HikariDataSource(config);
+    }
+
 }
