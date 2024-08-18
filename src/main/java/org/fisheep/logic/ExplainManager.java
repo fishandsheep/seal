@@ -2,6 +2,7 @@ package org.fisheep.logic;
 
 import io.javalin.http.Context;
 import org.fisheep.bean.SqlStatement;
+import org.fisheep.common.Result;
 import org.fisheep.common.SealException;
 import org.fisheep.common.StorageManagerFactory;
 import org.fisheep.util.PcapUtil;
@@ -11,6 +12,13 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class ExplainManager {
+
+    public static void one(Context ctx) {
+        final String id = ctx.formParam("id");
+        var data = StorageManagerFactory.data();
+        List<SqlStatement> one = data.sqlStatements().one(id);
+        ctx.json(new Result(one));
+    }
 
     //todo
     public static void upload(Context ctx) throws SealException {
@@ -34,7 +42,7 @@ public class ExplainManager {
                     throw new RuntimeException(e);
                 }
             });
-            List<SqlStatement> all = data.sqlStatements().all(db.getId() + timestamp);
+            List<SqlStatement> all = data.sqlStatements().one(db.getId() + timestamp);
             all.forEach(sqlStatement ->
                     CompletableFuture.runAsync(() -> {
                         //todo 解析SQL

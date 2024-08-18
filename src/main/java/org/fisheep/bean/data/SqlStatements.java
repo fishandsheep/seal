@@ -28,7 +28,7 @@ public class SqlStatements extends ReadWriteLocked {
         });
     }
 
-    public List<SqlStatement> all(String id) {
+    public List<SqlStatement> one(String id) {
         return this.read(() ->
                 Lazy.get(this.sqlStatements.get(id))
         );
