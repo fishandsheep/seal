@@ -27,9 +27,6 @@ public class Dbs extends ReadWriteLocked {
         this.delete(id, StorageManagerFactory.getInstance());
     }
 
-//    public void update(int id, Db db) {
-//        this.update(id, db, StorageManagerFactory.getInstance());
-//    }
 
     public Db one(int id) {
         return this.read(() -> this.dbs.get(id));
@@ -79,7 +76,8 @@ public class Dbs extends ReadWriteLocked {
         return this.write(() -> {
             List<String> timestamps = dbs.get(id).getTimestamps();
             if (timestamps.size() == 5) {
-                timestamps.remove(0);
+                String removeTimestampString = timestamps.remove(0);
+                StorageManagerFactory.data().sqlStatements().delete(dbs.get(id).getId()+removeTimestampString);
             }
             timestamps.add(timestampString);
             dbs.get(id).setTimestamps(timestamps);

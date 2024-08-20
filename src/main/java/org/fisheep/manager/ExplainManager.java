@@ -1,4 +1,4 @@
-package org.fisheep.logic;
+package org.fisheep.manager;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
@@ -42,15 +42,15 @@ public class ExplainManager {
         var db = data.dbs().one(id);
         //再测试下连接
         DbManager.getDbVersion(db);
-        data.sqlStatements().add(db.getId() + timestamp, new ArrayList<>());
 
         var results = PcapUtil.parseLogFile(uploadedFile, db.getPort());
-        data.sqlStatements().add(db.getId() + timestamp, results);
+        String explainId = db.getId() + timestamp;
+        data.sqlStatements().add(explainId, results);
 
         ctx.async(() -> {
             ctx.result(new ObjectMapper().writeValueAsString(new Result("the file is read successfully and is being parsed")));
             // 使用CompletableFuture异步处理任务
-            List<SqlStatement> sqlStatements = data.sqlStatements().one(db.getId() + timestamp);
+            List<SqlStatement> sqlStatements = data.sqlStatements().one(explainId);
             List<CompletableFuture<Void>> futures = new ArrayList<>();
             sqlStatements.forEach(sqlStatement -> {
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {

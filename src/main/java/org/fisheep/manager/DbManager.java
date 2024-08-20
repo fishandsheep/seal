@@ -1,4 +1,4 @@
-package org.fisheep.logic;
+package org.fisheep.manager;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
