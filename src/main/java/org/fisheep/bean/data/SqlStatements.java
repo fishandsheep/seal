@@ -6,10 +6,7 @@ import org.fisheep.bean.SqlStatement;
 import org.fisheep.common.StorageManagerFactory;
 import org.fisheep.common.concurrent.ReadWriteLocked;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
 
 /**
  * @author BigOrange
@@ -26,6 +23,25 @@ public class SqlStatements extends ReadWriteLocked {
                 Lazy.get(this.sqlStatements.get(id))
         );
     }
+
+    public Map<String, List<String>> dbAndTimestamp() {
+        return this.read(() -> {
+            Map<String, List<String>> map = new HashMap<>();
+            for (String key : sqlStatements.keySet()) {
+                String[] split = key.split("\\|");
+                String db = split[0];
+                String timestamp = split[1];
+                List<String> timestamps = map.computeIfAbsent(db, k -> new ArrayList<>());
+                timestamps.add(timestamp);
+            }
+            map.replaceAll((dbKey, timestamps) -> {
+                Collections.sort(timestamps);
+                return timestamps;
+            });
+            return map;
+        });
+    }
+
 
     public void delete(String id){
         this.delete(id, StorageManagerFactory.getInstance());

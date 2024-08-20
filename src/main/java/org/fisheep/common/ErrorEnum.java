@@ -20,7 +20,9 @@ public enum ErrorEnum {
 
     MYSQL_CONNECTION_EXIST(10004, "the database connection already exists"),
 
-    FILE_READ_FAIL(20001, "failed to read the file");
+    FILE_READ_FAIL(20001, "failed to read the file"),
+
+    FILE_IS_EMPTY(20002, "the file is empty");
 
     private final Integer code;
 

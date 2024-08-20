@@ -56,14 +56,6 @@ public class Dbs extends ReadWriteLocked {
         });
     }
 
-    private void update(int id, Db db, PersistenceStoring persistenceStoring) {
-        this.write(() -> {
-            this.dbs.remove(id);
-            this.dbs.add(id, db);
-            persistenceStoring.store(this.dbs);
-        });
-    }
-
     private void delete(int id, PersistenceStoring persistenceStoring) {
         this.dbs.remove(id);
         persistenceStoring.store(this.dbs);
@@ -77,7 +69,9 @@ public class Dbs extends ReadWriteLocked {
             List<String> timestamps = dbs.get(id).getTimestamps();
             if (timestamps.size() == 5) {
                 String removeTimestampString = timestamps.remove(0);
-                StorageManagerFactory.data().sqlStatements().delete(dbs.get(id).getId()+removeTimestampString);
+                var data = StorageManagerFactory.data();
+                data.sqlStatements().delete(dbs.get(id).getId() + removeTimestampString);
+                data.status().delete(dbs.get(id).getId() + removeTimestampString);
             }
             timestamps.add(timestampString);
             dbs.get(id).setTimestamps(timestamps);
