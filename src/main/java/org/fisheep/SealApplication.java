@@ -6,6 +6,7 @@ import org.eclipse.serializer.reference.Lazy;
 import org.eclipse.serializer.reference.LazyReferenceManager;
 import org.fisheep.common.Result;
 import org.fisheep.common.SealException;
+import org.fisheep.common.ThreadFactory;
 import org.fisheep.manager.DbManager;
 import org.fisheep.manager.ExplainManager;
 
@@ -27,6 +28,7 @@ public class SealApplication {
         var app = Javalin
                 .create(config -> {
                     config.staticFiles.add("/public", Location.CLASSPATH);
+                    config.router.contextPath = "/seal";
                     config.requestLogger.http((ctx, ms) ->
                             System.out.println(ctx.path() + "接口耗时：" + ms + "ms"));
                     config.router
@@ -38,7 +40,7 @@ public class SealApplication {
                             .apiBuilder(() -> path("/upload", () ->
                                     post(ExplainManager::upload)))
                             .apiBuilder(() -> path("/explain", () -> {
-                                        get(ExplainManager::dbAndTimestamp);
+                                        get(DbManager::dbAndTimestamp);
                                         path("/result", () -> post(ExplainManager::one));
                                         path("/status", () -> post(ExplainManager::status));
                                     }
@@ -51,6 +53,8 @@ public class SealApplication {
             Main.main(null);
             ctx.html(null);
         });
-
+        
+        Runtime.getRuntime().addShutdownHook(new Thread(ThreadFactory::shutdown)
+        );
     }
 }

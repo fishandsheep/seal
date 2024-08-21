@@ -37,11 +37,6 @@ public class Status {
     private String errorMessage;
 
     /**
-     * 百分比
-     */
-    private double process;
-
-    /**
      * 完成时间戳
      */
     private String timestamp;

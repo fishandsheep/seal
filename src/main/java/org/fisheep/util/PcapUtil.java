@@ -21,7 +21,7 @@ public class PcapUtil {
     static Pattern lineBreakPattern = Pattern.compile("(\\r?\\n)+");
 
     public static String singleLine(String str) {
-        return lineBreakPattern.matcher(str).replaceAll(" ");
+        return lineBreakPattern.matcher(str).replaceAll(" ").replaceAll("`", "");
     }
 
     private static final byte[] LOWER_SELECT_FLAG = {3, 0, 1, 83, 69, 76, 69, 67, 84};

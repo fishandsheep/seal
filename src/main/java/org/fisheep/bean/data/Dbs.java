@@ -8,8 +8,7 @@ import org.fisheep.common.concurrent.ReadWriteLocked;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -46,6 +45,16 @@ public class Dbs extends ReadWriteLocked {
 
     public String addTimestamp(int id) {
         return this.addTimestamp(id, StorageManagerFactory.getInstance());
+    }
+
+    public Map<String, List<String>> dbAndTimestamp() {
+        return this.read(() -> {
+            Map<String, List<String>> map = new HashMap<>();
+            dbs.forEach(db -> {
+                map.put(db.getId(), db.getTimestamps());
+            });
+            return map;
+        });
     }
 
     private void add(Db db, PersistenceStoring persistenceStoring) {

@@ -47,6 +47,10 @@ public class DbManager {
         ctx.json(new Result(all));
     }
 
+    public static void dbAndTimestamp(Context ctx) {
+        ctx.json(StorageManagerFactory.data().dbs().dbAndTimestamp());
+    }
+
     public static void getDbVersion(Db db) throws SealException {
         Connection connection;
         try {

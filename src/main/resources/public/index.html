@@ -295,7 +295,7 @@
             function data() {
                 return {
                     async getAllDbs() {
-                        var res = await (await fetch('/db', {
+                        var res = await (await fetch('/seal/db', {
                             method: 'GET'
                         })).json();
                         //console.log(res);
@@ -303,7 +303,7 @@
                     },
 
                     async delDb(index) {
-                        var res = await (await fetch('/db/' + index, {
+                        var res = await (await fetch('/seal/db/' + index, {
                             method: 'DELETE'
                         })).json();
                         //console.log(res);
@@ -311,7 +311,7 @@
                     },
                     async connectDb() {
                         delete this.db.message;
-                        var res = await (await fetch('/db', {
+                        var res = await (await fetch('/seal/db', {
                             method: 'POST',
                             body: JSON.stringify(this.db)
                         })).json();
@@ -324,7 +324,7 @@
                         var formData = new FormData();
                         formData.append('file',this.uploadFile);
                         formData.append('id', i);
-                        var res = await (await fetch('/upload',{
+                        var res = await (await fetch('/seal/upload',{
                             method: 'POST',
                             body: formData,
                         })).json();

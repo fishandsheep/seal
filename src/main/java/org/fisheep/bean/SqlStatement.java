@@ -30,6 +30,8 @@ public class SqlStatement {
 
     private String tableScanInfo;
 
+    private int risk;
+
     private long count;
 
     /**
