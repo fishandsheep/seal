@@ -13,7 +13,7 @@ public class Result {
 
     private int code = 200;
 
-    private String message = "成功";
+    private String message = "success";
 
     private Object result;
 

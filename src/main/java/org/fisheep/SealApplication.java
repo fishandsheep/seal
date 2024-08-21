@@ -28,6 +28,7 @@ public class SealApplication {
         var app = Javalin
                 .create(config -> {
                     config.staticFiles.add("/public", Location.CLASSPATH);
+                    config.http.defaultContentType = "text/plain; charset=utf-8";
                     config.router.contextPath = "/seal";
                     config.requestLogger.http((ctx, ms) ->
                             System.out.println(ctx.path() + "接口耗时：" + ms + "ms"));
@@ -41,7 +42,7 @@ public class SealApplication {
                                     post(ExplainManager::upload)))
                             .apiBuilder(() -> path("/explain", () -> {
                                         get(DbManager::dbAndTimestamp);
-                                        path("/result", () -> post(ExplainManager::one));
+                                path("/result", () -> post(ExplainManager::pageOne));
                                         path("/status", () -> post(ExplainManager::status));
                                     }
                             ));

@@ -1,5 +1,6 @@
 package org.fisheep.bean;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,32 +11,38 @@ public class Struct {
     /**
      * 规则代码
      */
-    private String Item;
+    @JsonProperty("Item")
+    private String item;
 
     /**
      * 危险等级L[0-8]
      */
-    private String Severity;
+    @JsonProperty("Severity")
+    private String severity;
 
     /**
      * 规则摘要
      */
-    private String Summary;
+    @JsonProperty("Summary")
+    private String summary;
 
     /**
      * 规则解释
      */
-    private String Content;
+    @JsonProperty("Content")
+    private String content;
 
     /**
      * SQL示例
      */
-    private String Case;
+    @JsonProperty("Case")
+    private String example;
 
     /**
      * 建议所处SQL字符位置，默认0表示全局建议
      */
-    private String Position;
+    @JsonProperty("Position")
+    private String position;
 
 
 }

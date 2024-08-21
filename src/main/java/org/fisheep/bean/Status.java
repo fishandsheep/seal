@@ -32,12 +32,7 @@ public class Status {
     private int error;
 
     /**
-     * 错误信息
+     * 耗时/s
      */
-    private String errorMessage;
-
-    /**
-     * 完成时间戳
-     */
-    private String timestamp;
+    private long processTime;
 }

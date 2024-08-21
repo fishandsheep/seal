@@ -45,4 +45,6 @@ public class SqlStatement {
 
     private List<Struct> explainRisk;
 
+    private String errorMessage;
+
 }
