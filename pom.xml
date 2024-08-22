@@ -18,7 +18,7 @@
         <jackson-databind.version>2.16.1</jackson-databind.version>
         <HikariCP.version>4.0.3</HikariCP.version>
         <kaitai.version>0.10</kaitai.version>
-        <mysql.version>8.0.32</mysql.version>
+        <mysql.version>8.2.0</mysql.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <lombok.version>1.18.30</lombok.version>
     </properties>
@@ -83,7 +83,7 @@
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-core</artifactId>
-            <version>5.8.16</version>
+            <version>5.8.25</version>
         </dependency>
 
         <dependency>

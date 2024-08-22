@@ -2,6 +2,7 @@ package org.fisheep;
 
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
+import io.javalin.http.util.NaiveRateLimit;
 import org.eclipse.serializer.reference.Lazy;
 import org.eclipse.serializer.reference.LazyReferenceManager;
 import org.fisheep.common.Result;
@@ -11,6 +12,7 @@ import org.fisheep.manager.DbManager;
 import org.fisheep.manager.ExplainManager;
 
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 import static io.javalin.apibuilder.ApiBuilder.*;
 
@@ -38,24 +40,28 @@ public class SealApplication {
                                 post(DbManager::add);
                                 path("/{id}", () -> delete(DbManager::delete));
                             }))
-                            .apiBuilder(() -> path("/upload", () ->
-                                    post(ExplainManager::upload)))
+                            .apiBuilder(() -> path("/export", () -> post(ExplainManager::export)))
                             .apiBuilder(() -> path("/explain", () -> {
                                         get(DbManager::dbAndTimestamp);
-                                path("/result", () -> post(ExplainManager::pageOne));
+                                        path("/result", () -> post(ExplainManager::pageOne));
                                         path("/status", () -> post(ExplainManager::status));
                                     }
                             ));
                 })
+                .post("/upload", ctx -> {
+                    ExplainManager.upload(ctx);
+                    NaiveRateLimit.requestPerTimeUnit(ctx, 10, TimeUnit.MINUTES);
+                })
                 .exception(SealException.class, (e, ctx) -> ctx.json(new Result(e.getCode(), e.getMsg())))
                 .start(7070);
 
+        app.sse("/explain/status/{explainId}", ExplainManager::sendStatus);
         app.post("/test", ctx -> {
             Main.main(null);
             ctx.html(null);
         });
-        
-        Runtime.getRuntime().addShutdownHook(new Thread(ThreadFactory::shutdown)
-        );
+
+        Runtime.getRuntime().addShutdownHook(new Thread(ThreadFactory::shutdown));
+        Runtime.getRuntime().addShutdownHook(new Thread(app::stop));
     }
 }

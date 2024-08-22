@@ -3,6 +3,12 @@ package org.fisheep.manager;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
+import io.javalin.http.sse.SseClient;
+import org.eclipse.store.afs.nio.types.NioFileSystem;
+import org.eclipse.store.storage.embedded.types.EmbeddedStorage;
+import org.eclipse.store.storage.embedded.types.EmbeddedStorageManager;
+import org.eclipse.store.storage.types.StorageConnection;
+import org.eclipse.store.storage.types.StorageEntityTypeExportStatistics;
 import org.fisheep.bean.Db;
 import org.fisheep.bean.SqlStatement;
 import org.fisheep.bean.Status;
@@ -48,6 +54,33 @@ public class ExplainManager {
         ctx.json(new Result(one));
     }
 
+    public static void sendStatus(SseClient sseClient) {
+        var ctx = sseClient.ctx();
+        var explainId = ctx.pathParam("explainId");
+        CompletableFuture.runAsync(() -> {
+            while (!isTaskCompleted(explainId)) {
+                sseClient.sendEvent("message", "task ~~~~~~~loading");
+                try {
+                    Thread.sleep(1000); // 每秒发送一次状态更新
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+            sseClient.sendEvent("message", "task: " + explainId + " is complete");
+            sseClient.close();
+        });
+    }
+
+    public static void export(Context ctx) {
+        NioFileSystem          fileSystem = NioFileSystem.New();
+        EmbeddedStorageManager storage    = EmbeddedStorage.start(
+                fileSystem.ensureDirectoryPath("storage")
+        );
+        StorageConnection                 connection   = storage.createConnection();
+        StorageEntityTypeExportStatistics exportResult = connection.exportTypes(
+                fileSystem.ensureDirectoryPath("export-dir"));
+    }
+
     public static void upload(Context ctx) throws SealException {
         var uploadedFile = ctx.uploadedFile("file");
         if (uploadedFile == null) {
@@ -66,7 +99,7 @@ public class ExplainManager {
         data.status().put(explainId, new Status(0, results.size(), 0, 0, 0));
 
         ctx.async(() -> {
-            ctx.result(new ObjectMapper().writeValueAsString(new Result("task id:" + explainId + ".the file is read successfully and is being parsed")));
+            ctx.result(new ObjectMapper().writeValueAsString(new Result("connection id: + " + db.getId() + "task timestamp: " + timestamp + ". the file is read successfully and is being parsed")));
             List<SqlStatement> sqlStatements = data.sqlStatements().one(explainId);
             List<SqlStatement> explainSqlStatements = new ArrayList<>();
             List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -82,6 +115,8 @@ public class ExplainManager {
                         explain.values().forEach(structMap -> structMap.values().forEach(struct -> {
                             if ("EXP.000".equals(struct.getItem())) {
                                 sqlStatement.setExplainPlan(struct);
+                            } else if (struct.getItem().startsWith("ERR.")){
+                                sqlStatement.setErrorMessage(struct.getSummary());
                             } else {
                                 structs.add(struct);
                             }
@@ -157,5 +192,10 @@ public class ExplainManager {
         Duration duration = Duration.between(dateTime1, dateTime2);
 
         return duration.getSeconds();
+    }
+
+    private static boolean isTaskCompleted(String explainId) {
+        var one = StorageManagerFactory.data().status().one(explainId);
+        return one.getStatus() == 1;
     }
 }
