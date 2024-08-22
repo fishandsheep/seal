@@ -91,7 +91,7 @@ public class ExplainManager {
 
         var results = PcapUtil.parseLogFile(uploadedFile, db.getPort());
         var explainId = db.getId() + "|" + timestamp;
-        data.sqlStatements().add(explainId, results);
+        //data.sqlStatements().add(explainId, results);
         data.status().put(explainId, new Status());
 
         ctx.async(() -> {
