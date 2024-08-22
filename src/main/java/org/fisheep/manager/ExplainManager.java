@@ -16,22 +16,36 @@ import java.io.InputStreamReader;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * @author BigOrange
+ */
 public class ExplainManager {
 
-    public static void pageOne(Context ctx) {
-        String explainId = ctx.formParam("explainId");
-        int currentPage = Integer.parseInt(ctx.formParam("currentPage"));
-        int pageSize = Integer.parseInt(ctx.formParam("pageSize"));
-        ctx.json(new Result(StorageManagerFactory.data().sqlStatements().pageOne(explainId, currentPage, pageSize)));
+    public static void pageOne(Context ctx) throws SealException {
+        var explainId = ctx.formParam("explainId");
+        var currentPage = Integer.parseInt(Objects.requireNonNull(ctx.formParam("currentPage")));
+        var pageSize = Integer.parseInt(Objects.requireNonNull(ctx.formParam("pageSize")));
+        var one = StorageManagerFactory.data().sqlStatements().one(explainId);
+        if (one == null) {
+            throw new SealException(ErrorEnum.TASK_NOT_FOUND);
+        }
+        ctx.json(new PageResult<>(one, currentPage, pageSize));
     }
 
-    public static void status(Context ctx) {
-        String explainId = ctx.formParam("explainId");
-        ctx.json(new Result(StorageManagerFactory.data().status().one(explainId)));
+    public static void status(Context ctx) throws SealException {
+        var explainId = ctx.formParam("explainId");
+        var one = StorageManagerFactory.data().status().one(explainId);
+        if (one == null) {
+            throw new SealException(ErrorEnum.TASK_NOT_FOUND);
+        }
+        ctx.json(new Result(one));
     }
 
     public static void upload(Context ctx) throws SealException {
@@ -52,7 +66,7 @@ public class ExplainManager {
         data.status().put(explainId, new Status(0, results.size(), 0, 0, 0));
 
         ctx.async(() -> {
-            ctx.result(new ObjectMapper().writeValueAsString(new Result("the file is read successfully and is being parsed" + explainId)));
+            ctx.result(new ObjectMapper().writeValueAsString(new Result("task id:" + explainId + ".the file is read successfully and is being parsed")));
             List<SqlStatement> sqlStatements = data.sqlStatements().one(explainId);
             List<SqlStatement> explainSqlStatements = new ArrayList<>();
             List<CompletableFuture<Void>> futures = new ArrayList<>();
@@ -89,14 +103,14 @@ public class ExplainManager {
                 LocalDateTime now = LocalDateTime.now();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HH:mm:ss");
                 String timestampString = now.format(formatter);
-                long time = calculateDifferenceInSeconds(timestamp, timestampString);
+                var time = calculateDifferenceInSeconds(timestamp, timestampString);
                 data.sqlStatements().add(explainId, explainSqlStatements);
                 data.status().put(explainId, new Status(1, sqlStatements.size(), successCount.get(), failureCount.get(), time));
             }).exceptionally((e) -> {
                 LocalDateTime now = LocalDateTime.now();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HH:mm:ss");
-                String timestampString = now.format(formatter);
-                long time = calculateDifferenceInSeconds(timestamp, timestampString);
+                var timestampString = now.format(formatter);
+                var time = calculateDifferenceInSeconds(timestamp, timestampString);
                 if (failureCount.get() != sqlStatements.size()) {
                     data.status().put(explainId, new Status(2, sqlStatements.size(), 0, failureCount.get(), time));
                 }
@@ -110,12 +124,11 @@ public class ExplainManager {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
             StringBuilder jsonBuilder = new StringBuilder();
-            Map<String, Struct> explainMap = new HashMap<>();
             while ((line = reader.readLine()) != null) {
                 jsonBuilder.append(line);
             }
             ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.readValue(jsonBuilder.toString(), new TypeReference<Map<String, Map<String, Struct>>>() {
+            return objectMapper.readValue(jsonBuilder.toString(), new TypeReference<>() {
             });
         } finally {
             process.destroy();

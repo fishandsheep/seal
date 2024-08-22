@@ -5,7 +5,6 @@ import org.eclipse.serializer.collections.lazy.LazyList;
 import org.eclipse.serializer.persistence.types.PersistenceStoring;
 import org.eclipse.serializer.reference.Lazy;
 import org.fisheep.bean.SqlStatement;
-import org.fisheep.common.PageResult;
 import org.fisheep.common.StorageManagerFactory;
 import org.fisheep.common.concurrent.ReadWriteLocked;
 
@@ -26,15 +25,6 @@ public class SqlStatements extends ReadWriteLocked {
     public LazyList<SqlStatement> one(String id) {
         return this.read(() ->
                 Lazy.get(this.sqlStatements.get(id))
-        );
-    }
-
-    public PageResult<SqlStatement> pageOne(String id, int currentPage, int pageSize) {
-        return this.read(() ->
-                {
-                    LazyList<SqlStatement> sqlStatementLazyList = Lazy.get(this.sqlStatements.get(id));
-                    return new PageResult<>(sqlStatementLazyList, currentPage, pageSize);
-                }
         );
     }
 

@@ -22,7 +22,11 @@ public enum ErrorEnum {
 
     FILE_READ_FAIL(20001, "failed to read the file"),
 
-    FILE_IS_EMPTY(20002, "the file is empty");
+    FILE_IS_EMPTY(20002, "the file is empty"),
+
+    TASK_NOT_FOUND(30001,"this task is not queried, please select it again"),
+
+    TASK_NOT_EXIST(30002,"task does not exist, please create it");
 
     private final Integer code;
 

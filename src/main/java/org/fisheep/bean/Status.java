@@ -12,7 +12,7 @@ import lombok.Setter;
 public class Status {
 
     /**
-     * 状态 0-进行中，1-完成，2-出错，3-被取消
+     * 状态 0-进行中，1-完成，2-出错
      */
     private int status;
 
