@@ -11,7 +11,7 @@ public class ThreadFactory {
             8,
             60L,
             TimeUnit.SECONDS,
-            new LinkedBlockingQueue<>(100),
+            new LinkedBlockingQueue<>(500),
             new ThreadPoolExecutor.CallerRunsPolicy()
     );
 

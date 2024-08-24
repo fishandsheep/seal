@@ -49,8 +49,9 @@ public class SealApplication {
                             ));
                 })
                 .post("/upload", ctx -> {
-                    ExplainManager.upload(ctx);
                     NaiveRateLimit.requestPerTimeUnit(ctx, 10, TimeUnit.MINUTES);
+                    NaiveRateLimit.requestPerTimeUnit(ctx, 1, TimeUnit.SECONDS);
+                    ExplainManager.upload(ctx);
                 })
                 .exception(SealException.class, (e, ctx) -> ctx.json(new Result(e.getCode(), e.getMsg())))
                 .start(7070);

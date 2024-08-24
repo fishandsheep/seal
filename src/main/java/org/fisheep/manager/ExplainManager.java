@@ -98,7 +98,7 @@ public class ExplainManager {
         data.status().put(explainId, new Status(0, results.size(), 0, 0, 0));
 
         ctx.async(() -> {
-            ctx.result(new ObjectMapper().writeValueAsString(new Result("connection id: + " + db.getId() + "task timestamp: " + timestamp + ". the file is read successfully and is being parsed")));
+            ctx.result(new ObjectMapper().writeValueAsString(new Result("connection id: " + db.getId() + " , task timestamp: " + timestamp + " . the file is read successfully and is being parsed")));
             List<SqlStatement> sqlStatements = data.sqlStatements().one(explainId);
             List<SqlStatement> explainSqlStatements = new ArrayList<>();
             List<CompletableFuture<Void>> futures = new ArrayList<>();
