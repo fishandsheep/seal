@@ -172,7 +172,9 @@ public class ExplainManager {
 
     private static Process getProcess(String sql, Db db) throws IOException {
         List<String> command = new ArrayList<>();
-        command.add("/home/lighthouse/soar/soar");
+        //-Dsoar.path=
+        String soarPath = System.getProperty("soar.path");
+        command.add(soarPath);
         command.add("-query");
         command.add(sql);
         command.add("-test-dsn=" + db.getUsername() + ":" + db.getPassword() + "@" + db.getUrl() + ":" + db.getPort() + "/" + db.getSchema());

@@ -34,7 +34,7 @@
                         </a>
                     </li>
                     <li x-on:click="showActive = false">
-                        <a href="#" x-bind:class="{ 'bg-gray-100': !showActive }"
+                        <a x-on:click="getExplain()" href="#" x-bind:class="{ 'bg-gray-100': !showActive }"
                             class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700">
                             风险扫描
                         </a>
@@ -211,16 +211,29 @@
         <!-- 风险扫描内容区  -->
         <div x-show="!showActive" class="flex flex-col mx-auto mt-4 w-4/5">
             <!-- 风险选择区  -->
-            <div class="w-44">
-                <label for="HeadlineAct" class="block text-sm font-medium text-gray-900">Recent 5 Parse</label>
-
-                <select name="HeadlineAct" id="HeadlineAct"
-                    class="mt-1.5 w-full rounded-lg border-2 border-gray-500 text-gray-700 sm:text-sm py-3 px-2">
-                    <option value="">Please select</option>
-                    <template x-for="(recent,index) in recentTimes" :key="index">
-                        <option value="recent" x-model="recent" x-text="recent"></option>
-                    </template>
-                </select>
+            <div class="flex">
+                <div class="w-60 pr-4">
+                    <label for="HeadlineAct" class="block text-sm font-medium text-gray-900">Connections</label>
+    
+                    <select x-model="connection" name="HeadlineAct" id="HeadlineAct"
+                        class="mt-1.5 w-full rounded-lg border-2 border-gray-500 text-gray-700 sm:text-sm py-3 px-2">
+                        <option value="">Please select</option>
+                        <template x-for="(conn,index) in Object.keys(connections)" :key="index">
+                            <option value="conn" x-model="conn" x-text="conn"></option>
+                        </template>
+                    </select>
+                </div>
+                <div class="w-48 pl-4">
+                    <label for="HeadlineAct" class="block text-sm font-medium text-gray-900">Recent 5 Parse</label>
+    
+                    <select x-model="recentTime" x-on:change="getParseSqls()" name="HeadlineAct" id="HeadlineAct"
+                        class="mt-1.5 w-full rounded-lg border-2 border-gray-500 text-gray-700 sm:text-sm py-3 px-2">
+                        <option value="">Please select</option>
+                        <template x-for="(recent,index) in connections[connection]" :key="index">
+                            <option value="recent" x-model="recent" x-text="recent"></option>
+                        </template>
+                    </select>
+                </div>
             </div>
 
             <!-- 风险SQL列表 -->
@@ -329,92 +342,48 @@
                             body: formData,
                         })).json();
                     },
+                    async getExplain() {
+                        var res = await (await fetch('/seal/explain', {
+                            method: 'GET'
+                        })).json();
+                        //console.log(res);
+                        this.connections = res.result;
+                    },
+                    async getParseSqls() {
+                        var formData = new FormData();
+                        formData.append('explainId',this.connection+'|'+this.recentTime);
+                        formData.append('currentPage', this.currentPage);
+                        formData.append('pageSize', 10);
+                        var res = await (await fetch('/seal/explain/result',{
+                            method: 'POST',
+                            body: formData,
+                        })).json();
+                        this.sqls = res;
+                    },
                     db: {},
                     resCode: 200,
                     currentPage: 1,
                     showActive: true,
-                    dbs: [
-
-                    ],
+                    dbs: [],
                     uploadFile:'',
-                    recentTimes: [
-                        "20240730-00:00:00",
-                        "20240731-11:11:11",
-                        "20240730-22:22:22",
-                        "20240730-33:33:33",
-                    ],
+                    connections:{},
+                    connection:'',
+                    recentTimes: [],
+                    recentTime:'',
                     sqls: {
-                        totalPages: 3,
-                        totalRecords: 21,
-                        result: [
-                            {
-                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
-                                risk: 2,
-                                count: 2,
-                                maxTakeTime: 8
-                            },
-                            {
-                                content: "SELECT `action_id`, `action_name`, `action_description`, `action_type_id`, `action_picture`, `part_id` FROM `action` WHERE `action_id` = 3 LIMIT 1",
-                                risk: 2,
-                                count: 2,
-                                maxTakeTime: 8
-                            },
-                            {
-                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
-                                risk: 2,
-                                count: 2,
-                                maxTakeTime: 8
-                            },
-                            {
-                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
-                                risk: 2,
-                                count: 2,
-                                maxTakeTime: 8
-                            },
-                            {
-                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
-                                risk: 2,
-                                count: 2,
-                                maxTakeTime: 8
-                            },
-                            {
-                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
-                                risk: 2,
-                                count: 2,
-                                maxTakeTime: 8
-                            },
-                            {
-                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
-                                risk: 2,
-                                count: 2,
-                                maxTakeTime: 8
-                            },
-                            {
-                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
-                                risk: 2,
-                                count: 2,
-                                maxTakeTime: 8
-                            },
-                            {
-                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
-                                risk: 2,
-                                count: 2,
-                                maxTakeTime: 8
-                            },
-                            {
-                                content: "SELECT `record_id`, `user_id`, `action_id`, `training_date`, `weight`, `reps_per_set`, `duration_minutes`, `input_id`, `create_time`, `update_time` FROM `training_record` WHERE `user_id` = 11 AND `training_date` = '20240717'",
-                                risk: 2,
-                                count: 2,
-                                maxTakeTime: 8
-                            }
+                        totalPages: 0,
+                        totalRecords: 0,
+                        result: [  
                         ],
                     },
                     changePage(index) {
-                        this.currentPage = index
+                        this.currentPage = index;
+                        this.getParseSqls();
                     },
                     nextPage(count) {
                         if ((this.currentPage > 1 && count == -1) || (this.currentPage < this.sqls.totalPages && count == 1)) {
                             this.currentPage = this.currentPage + count;
+                            this.getParseSqls();
                         }
                     }
                 }
