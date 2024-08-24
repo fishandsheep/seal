@@ -257,10 +257,10 @@
                         </thead>
                         <tbody class="divide-y divide-gray-200 text-gray-700">
                             <template x-for="(sql,index) in sqls.result" :key="index">
-                                <tr>
+                                <tr x-on:click="riskInfo = sql.explain;showAlert=true;">
                                     <td x-text="sql.content" x-model="sql.connect"
                                         class="whitespace-nowrap px-4 py-4 text-wrap"></td>
-                                    <td x-on:click="riskInfo = sql.explain;showAlert=true;" x-text="sql.score" class="whitespace-nowrap px-4 py-2"></td>
+                                    <td x-text="sql.score" class="whitespace-nowrap px-4 py-2"></td>
                                     <td x-text="sql.count" class="whitespace-nowrap px-4 py-2"></td>
                                     <td x-text="sql.maxTakeTime" class="whitespace-nowrap px-4 py-2"></td>
                                 </tr>
