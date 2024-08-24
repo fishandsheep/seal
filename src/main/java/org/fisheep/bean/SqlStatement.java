@@ -30,7 +30,7 @@ public class SqlStatement {
 
     private String tableScanInfo;
 
-    private int risk;
+    private int score;
 
     private long count;
 
@@ -41,9 +41,7 @@ public class SqlStatement {
      */
     private long maxTakeTime;
 
-    private Struct explainPlan;
-
-    private List<Struct> explainRisk;
+    private String explain;
 
     private String errorMessage;
 

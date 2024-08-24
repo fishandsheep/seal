@@ -1,6 +1,5 @@
 package org.fisheep.manager;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
 import io.javalin.http.sse.SseClient;
@@ -13,7 +12,6 @@ import org.eclipse.store.storage.types.StorageEntityTypeExportStatistics;
 import org.fisheep.bean.Db;
 import org.fisheep.bean.SqlStatement;
 import org.fisheep.bean.Status;
-import org.fisheep.bean.Struct;
 import org.fisheep.common.*;
 import org.fisheep.util.PcapUtil;
 
@@ -25,7 +23,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -108,20 +105,10 @@ public class ExplainManager {
 
             sqlStatements.forEach(sqlStatement -> {
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-                    ArrayList<Struct> structs = new ArrayList<>();
                     try {
-                        Map<String, Map<String, Struct>> explain = explain(sqlStatement.getContent(), db);
-                        explain.values().forEach(structMap -> structMap.values().forEach(struct -> {
-                            if ("EXP.000".equals(struct.getItem())) {
-                                sqlStatement.setExplainPlan(struct);
-                            } else if (struct.getItem().startsWith("ERR.")) {
-                                sqlStatement.setErrorMessage(struct.getSummary());
-                            } else {
-                                structs.add(struct);
-                            }
-                        }));
-                        sqlStatement.setExplainRisk(structs);
-                        sqlStatement.setRisk(structs.size());
+                        String explain = explain(sqlStatement.getContent(), db);
+                        sqlStatement.setExplain(explain);
+                        sqlStatement.setScore(explain.length());//TODO
                         explainSqlStatements.add(sqlStatement);
                         successCount.incrementAndGet();
                     } catch (IOException e) {
@@ -153,7 +140,7 @@ public class ExplainManager {
         });
     }
 
-    private static Map<String, Map<String, Struct>> explain(String sql, Db db) throws IOException {
+    private static String explain(String sql, Db db) throws IOException {
         final Process process = getProcess(sql, db);
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
@@ -162,9 +149,7 @@ public class ExplainManager {
                 jsonBuilder.append(line);
             }
             log.debug("soar执行结果：{}", jsonBuilder);
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.readValue(jsonBuilder.toString(), new TypeReference<>() {
-            });
+            return jsonBuilder.toString();
         } finally {
             process.destroy();
         }
@@ -179,7 +164,6 @@ public class ExplainManager {
         command.add(sql);
         command.add("-test-dsn=" + db.getUsername() + ":" + db.getPassword() + "@" + db.getUrl() + ":" + db.getPort() + "/" + db.getSchema());
         command.add("-allow-online-as-test=true");
-        command.add("-report-type=json");
         ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.redirectErrorStream(true);
         return processBuilder.start();

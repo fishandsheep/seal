@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width,  
                    initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- <script defer src="./static/js/alpine.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@ryangjchandler/alpine-clipboard@2.x.x/dist/alpine-clipboard.js" defer></script> -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -253,7 +254,14 @@
                                 <tr>
                                     <td x-text="sql.content" x-model="sql.connect"
                                         class="whitespace-nowrap px-4 py-4 text-wrap"></td>
-                                    <td x-text="sql.risk" class="whitespace-nowrap px-4 py-2"></td>
+
+                                    <td>
+                                        <div x-html="marked.parse(sql.explain)" >
+
+                                        </div>
+                                    </td>
+
+                                    <td x-text="sql.score" class="whitespace-nowrap px-4 py-2"></td>
                                     <td x-text="sql.count" class="whitespace-nowrap px-4 py-2"></td>
                                     <td x-text="sql.maxTakeTime" class="whitespace-nowrap px-4 py-2"></td>
                                 </tr>
