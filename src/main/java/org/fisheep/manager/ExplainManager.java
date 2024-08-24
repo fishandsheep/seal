@@ -146,7 +146,7 @@ public class ExplainManager {
             String line;
             StringBuilder jsonBuilder = new StringBuilder();
             while ((line = reader.readLine()) != null) {
-                jsonBuilder.append(line);
+                jsonBuilder.append(line + "\n");
             }
             log.debug("soar执行结果：{}", jsonBuilder);
             return jsonBuilder.toString();

@@ -59,8 +59,13 @@
             </div>
         </div>
 
+  
+
         <!-- 数据连接内容区 -->
         <div x-show="showActive" class="flex flex-col mx-auto mt-8 w-4/5">
+
+            <div x-html="marked.parse('# Marked in browser\n\nRendered by **marked**.')" ></div>
+
             <!-- 数据库连接信息 -->
             <div class="flex space-x-4">
                 <div>
@@ -185,11 +190,12 @@
                                     <div class="relative border-2 rounded-xl">
                                         <input type="file" id="file"
                                             class="w-full rounded-md border-gray-200 pe-10 shadow-sm sm:text-sm"
-                                            x-ref="file" @change="uploadFile = $refs.file.files[0]"  accept=".pcap" />
+                                            x-ref="file" @change="uploadFile = $refs.file.files[0]" accept=".pcap" />
                                     </div>
                                 </td>
                                 <td class="whitespace-nowrap text-gray-700 flex items-center">
-                                    <a x-on:click="upload(index)" class="my-2 ml-4 px-2 py-2 inline-block rounded border border-blue-500 text-sm font-medium text-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring active:bg-indigo-500"
+                                    <a x-on:click="upload(index)"
+                                        class="my-2 ml-4 px-2 py-2 inline-block rounded border border-blue-500 text-sm font-medium text-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring active:bg-indigo-500"
                                         href="#">
                                         parse
                                     </a>
@@ -215,7 +221,7 @@
             <div class="flex">
                 <div class="w-60 pr-4">
                     <label for="HeadlineAct" class="block text-sm font-medium text-gray-900">Connections</label>
-    
+
                     <select x-model="connection" name="HeadlineAct" id="HeadlineAct"
                         class="mt-1.5 w-full rounded-lg border-2 border-gray-500 text-gray-700 sm:text-sm py-3 px-2">
                         <option value="">Please select</option>
@@ -226,7 +232,7 @@
                 </div>
                 <div class="w-48 pl-4">
                     <label for="HeadlineAct" class="block text-sm font-medium text-gray-900">Recent 5 Parse</label>
-    
+
                     <select x-model="recentTime" x-on:change="getParseSqls()" name="HeadlineAct" id="HeadlineAct"
                         class="mt-1.5 w-full rounded-lg border-2 border-gray-500 text-gray-700 sm:text-sm py-3 px-2">
                         <option value="">Please select</option>
@@ -244,7 +250,7 @@
                         <thead class="text-left ltr:text-left rtl:text-right font-bold text-gray-900">
                             <tr>
                                 <th class="whitespace-nowrap px-4 py-2">Sql Content</th>
-                                <th class="whitespace-nowrap px-4 py-2">Risk</th>
+                                <th x-on:click="showAlert=true" class="whitespace-nowrap px-4 py-2">Score</th>
                                 <th class="whitespace-nowrap px-4 py-2">Count</th>
                                 <th class="whitespace-nowrap px-4 py-2">Max Time(ms)</th>
                             </tr>
@@ -254,14 +260,7 @@
                                 <tr>
                                     <td x-text="sql.content" x-model="sql.connect"
                                         class="whitespace-nowrap px-4 py-4 text-wrap"></td>
-
-                                    <td>
-                                        <div x-html="marked.parse(sql.explain)" >
-
-                                        </div>
-                                    </td>
-
-                                    <td x-text="sql.score" class="whitespace-nowrap px-4 py-2"></td>
+                                    <td x-on:click="riskInfo = sql.explain;showAlert=true;" x-text="sql.score" class="whitespace-nowrap px-4 py-2"></td>
                                     <td x-text="sql.count" class="whitespace-nowrap px-4 py-2"></td>
                                     <td x-text="sql.maxTakeTime" class="whitespace-nowrap px-4 py-2"></td>
                                 </tr>
@@ -269,6 +268,9 @@
                         </tbody>
                     </table>
                 </div>
+                
+           
+
 
                 <div class="rounded-b-lg border-t border-gray-200 px-4 py-2">
                     <ol class="flex justify-end gap-1 text-xs font-medium">
@@ -309,6 +311,40 @@
                     </ol>
                 </div>
             </div>
+
+
+    
+
+            <!-- soar 风险弹窗 -->
+             <div class="flex pt-10 w-auto">
+                <div x-show="showAlert" role="alert" class="flex rounded-xl border-2 shadow-gray-500 border-gray-100 bg-white p-4 w-auto">
+                    <div class="flex items-start gap-4">
+                        <span class="text-green-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </span>
+                
+                        <div class="flex-1">
+                            <strong class="block font-medium text-gray-900"> Changes saved </strong>
+                
+                            <div x-html="marked.parse(riskInfo)" class="mt-1 text-sm text-gray-700"></div>
+                        </div>
+                
+                        <button class="text-gray-500 transition hover:text-gray-600">
+                            <span class="sr-only">Dismiss popup</span>
+                
+                            <svg x-on:click="showAlert=false" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+             </div>
+        
         </div>
 
         <script>
@@ -341,11 +377,11 @@
                         this.db.message = res.message;
                         this.dbs = res.result;
                     },
-                    async upload(i){
+                    async upload(i) {
                         var formData = new FormData();
-                        formData.append('file',this.uploadFile);
+                        formData.append('file', this.uploadFile);
                         formData.append('id', i);
-                        var res = await (await fetch('/seal/upload',{
+                        var res = await (await fetch('/seal/upload', {
                             method: 'POST',
                             body: formData,
                         })).json();
@@ -359,10 +395,10 @@
                     },
                     async getParseSqls() {
                         var formData = new FormData();
-                        formData.append('explainId',this.connection+'|'+this.recentTime);
+                        formData.append('explainId', this.connection + '|' + this.recentTime);
                         formData.append('currentPage', this.currentPage);
                         formData.append('pageSize', 10);
-                        var res = await (await fetch('/seal/explain/result',{
+                        var res = await (await fetch('/seal/explain/result', {
                             method: 'POST',
                             body: formData,
                         })).json();
@@ -373,17 +409,30 @@
                     currentPage: 1,
                     showActive: true,
                     dbs: [],
-                    uploadFile:'',
-                    connections:{},
-                    connection:'',
+                    uploadFile: '',
+                    connections: {},
+                    connection: '',
                     recentTimes: [],
-                    recentTime:'',
+                    recentTime: '',
+                    riskInfo:'',
                     sqls: {
                         totalPages: 0,
                         totalRecords: 0,
-                        result: [  
+                        result: [
+                            {
+                                content: "SELECT record_id, user_id, action_id, training_date, weight, reps_per_set, duration_minutes, input_id, create_time, update_time FROM training_record WHERE user_id = 11 AND training_date = '20240717'",
+                                isFullTableSearch: 0,
+                                isFullTableScan: 0,
+                                tableScanInfo: null,
+                                score: 826,
+                                count: 7,
+                                maxTakeTime: 3,
+                                explain: "# Query: 173594061A8EB28F★ ★ ★ ★ ★ 100分```sqlSELECT    record_id, user_id, action_id, training_date, weight, reps_per_set, duration_minutes, input_id, create_time, update_time  FROM    training_record  WHERE    user_id  = 11    AND  training_date  = '20240717'```##  Explain信息| id | select\\_type | table | partitions | type | possible_keys | key | key\\_len | ref | rows | filtered | scalability | Extra ||---|---|---|---|---|---|---|---|---|---|---|---|---|| 1  | SIMPLE | *training\\_record* | NULL | ALL | NULL | NULL | NULL | NULL | 769 | 1.00% | ☠️ **O(n)** | Using where |### Explain信息解读#### SelectType信息解读* **SIMPLE**: 简单SELECT(不使用UNION或子查询等).#### Type信息解读* ☠️ **ALL**: 最坏的情况, 从头到尾全表扫描.#### Extra信息解读* **Using where**: WHERE条件用于筛选出与下一个表匹配的数据然后返回给客户端. 除非故意做的全表扫描, 否则连接类型是ALL或者是index, 且在Extra列的值中没有Using Where, 则该查询可能是有问题的.",
+                                errorMessage: null
+                            }
                         ],
                     },
+                    showAlert: false,
                     changePage(index) {
                         this.currentPage = index;
                         this.getParseSqls();
