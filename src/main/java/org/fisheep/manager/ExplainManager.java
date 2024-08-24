@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
 import io.javalin.http.sse.SseClient;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.store.afs.nio.types.NioFileSystem;
 import org.eclipse.store.storage.embedded.types.EmbeddedStorage;
 import org.eclipse.store.storage.embedded.types.EmbeddedStorageManager;
@@ -32,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author BigOrange
  */
+@Slf4j
 public class ExplainManager {
 
     public static void pageOne(Context ctx) throws SealException {
@@ -72,13 +74,10 @@ public class ExplainManager {
     }
 
     public static void export(Context ctx) {
-        NioFileSystem          fileSystem = NioFileSystem.New();
-        EmbeddedStorageManager storage    = EmbeddedStorage.start(
-                fileSystem.ensureDirectoryPath("storage")
-        );
-        StorageConnection                 connection   = storage.createConnection();
-        StorageEntityTypeExportStatistics exportResult = connection.exportTypes(
-                fileSystem.ensureDirectoryPath("export-dir"));
+        NioFileSystem fileSystem = NioFileSystem.New();
+        EmbeddedStorageManager storage = EmbeddedStorage.start(fileSystem.ensureDirectoryPath("storage"));
+        StorageConnection connection = storage.createConnection();
+        StorageEntityTypeExportStatistics exportResult = connection.exportTypes(fileSystem.ensureDirectoryPath("export-dir"));
     }
 
     public static void upload(Context ctx) throws SealException {
@@ -115,7 +114,7 @@ public class ExplainManager {
                         explain.values().forEach(structMap -> structMap.values().forEach(struct -> {
                             if ("EXP.000".equals(struct.getItem())) {
                                 sqlStatement.setExplainPlan(struct);
-                            } else if (struct.getItem().startsWith("ERR.")){
+                            } else if (struct.getItem().startsWith("ERR.")) {
                                 sqlStatement.setErrorMessage(struct.getSummary());
                             } else {
                                 structs.add(struct);
@@ -162,6 +161,7 @@ public class ExplainManager {
             while ((line = reader.readLine()) != null) {
                 jsonBuilder.append(line);
             }
+            log.debug("soar执行结果：{}", jsonBuilder);
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readValue(jsonBuilder.toString(), new TypeReference<>() {
             });
