@@ -18,7 +18,7 @@ public class SqlStatement {
 
     private String content;
 
-    private int score;
+    private String score;
 
     private long count;
 

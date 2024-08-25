@@ -57,10 +57,6 @@ public class SealApplication {
                 .start(7070);
 
         app.sse("/explain/status/{explainId}", ExplainManager::sendStatus);
-        app.post("/test", ctx -> {
-            Main.main(null);
-            ctx.html(null);
-        });
 
         Runtime.getRuntime().addShutdownHook(new Thread(ThreadFactory::shutdown));
         Runtime.getRuntime().addShutdownHook(new Thread(app::stop));

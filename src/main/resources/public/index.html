@@ -7,8 +7,6 @@
                    initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- <script defer src="./static/js/alpine.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@ryangjchandler/alpine-clipboard@2.x.x/dist/alpine-clipboard.js" defer></script> -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 
@@ -59,13 +57,10 @@
             </div>
         </div>
 
-  
+
 
         <!-- 数据连接内容区 -->
         <div x-show="showActive" class="flex flex-col mx-auto mt-8 w-4/5">
-
-            <div x-html="marked.parse('# Marked in browser\n\nRendered by **marked**.')" ></div>
-
             <!-- 数据库连接信息 -->
             <div class="flex space-x-4">
                 <div>
@@ -250,17 +245,18 @@
                         <thead class="text-left ltr:text-left rtl:text-right font-bold text-gray-900">
                             <tr>
                                 <th class="whitespace-nowrap px-4 py-2">Sql Content</th>
-                                <th x-on:click="showAlert=true" class="whitespace-nowrap px-4 py-2">Score</th>
+                                <th class="whitespace-nowrap px-4 py-2">Score</th>
                                 <th class="whitespace-nowrap px-4 py-2">Count</th>
                                 <th class="whitespace-nowrap px-4 py-2">Max Time(ms)</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 text-gray-700">
                             <template x-for="(sql,index) in sqls.result" :key="index">
-                                <tr x-on:click="riskInfo = sql.explain;showAlert=true;">
+                                <tr>
                                     <td x-text="sql.content" x-model="sql.connect"
                                         class="whitespace-nowrap px-4 py-4 text-wrap"></td>
-                                    <td x-text="sql.score" class="whitespace-nowrap px-4 py-2"></td>
+                                    <td x-on:click="riskInfo = sql.explain;showAlert=true;" x-text="sql.score"
+                                        class="whitespace-nowrap px-4 py-2 text-blue-600 underline hover:cursor-pointer"></td>
                                     <td x-text="sql.count" class="whitespace-nowrap px-4 py-2"></td>
                                     <td x-text="sql.maxTakeTime" class="whitespace-nowrap px-4 py-2"></td>
                                 </tr>
@@ -268,8 +264,8 @@
                         </tbody>
                     </table>
                 </div>
-                
-           
+
+
 
 
                 <div class="rounded-b-lg border-t border-gray-200 px-4 py-2">
@@ -312,12 +308,15 @@
                 </div>
             </div>
 
-
-    
-
             <!-- soar 风险弹窗 -->
-             <div class="flex pt-10 w-auto">
-                <div x-show="showAlert" role="alert" class="flex rounded-xl border-2 shadow-gray-500 border-gray-100 bg-white p-4 w-auto">
+            <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2  text-white p-4 z-50">
+                <div x-transition:enter="transition ease-out duration-300"
+                    x-transition:enter-start="opacity-0 transform scale-90"
+                    x-transition:enter-end="opacity-100 transform scale-100"
+                    x-transition:leave="transition ease-in duration-300"
+                    x-transition:leave-start="opacity-100 transform scale-100"
+                    x-transition:leave-end="opacity-0 transform scale-90" x-show="showAlert" role="alert"
+                    class="flex rounded-xl border-2 shadow-gray-800 border-gray-100 bg-gray-50 p-4 w-auto shadow-lg">
                     <div class="flex items-start gap-4">
                         <span class="text-green-600">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -326,24 +325,25 @@
                                     d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </span>
-                
+
                         <div class="flex-1">
-                            <strong class="block font-medium text-gray-900"> Changes saved </strong>
-                
+                            <strong class="block font-medium text-gray-900"> Risk Info </strong>
+
                             <div x-html="marked.parse(riskInfo)" class="mt-1 text-sm text-gray-700"></div>
                         </div>
-                
+
                         <button class="text-gray-500 transition hover:text-gray-600">
-                            <span class="sr-only">Dismiss popup</span>
-                
-                            <svg x-on:click="showAlert=false" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <svg x-on:click="showAlert=false" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </button>
                     </div>
                 </div>
              </div>
+             </div>
+        
+            </div>
         
         </div>
 
@@ -390,7 +390,6 @@
                         var res = await (await fetch('/seal/explain', {
                             method: 'GET'
                         })).json();
-                        //console.log(res);
                         this.connections = res.result;
                     },
                     async getParseSqls() {
@@ -427,7 +426,7 @@
                                 score: 826,
                                 count: 7,
                                 maxTakeTime: 3,
-                                explain: "# Query: 173594061A8EB28F★ ★ ★ ★ ★ 100分```sqlSELECT    record_id, user_id, action_id, training_date, weight, reps_per_set, duration_minutes, input_id, create_time, update_time  FROM    training_record  WHERE    user_id  = 11    AND  training_date  = '20240717'```##  Explain信息| id | select\\_type | table | partitions | type | possible_keys | key | key\\_len | ref | rows | filtered | scalability | Extra ||---|---|---|---|---|---|---|---|---|---|---|---|---|| 1  | SIMPLE | *training\\_record* | NULL | ALL | NULL | NULL | NULL | NULL | 769 | 1.00% | ☠️ **O(n)** | Using where |### Explain信息解读#### SelectType信息解读* **SIMPLE**: 简单SELECT(不使用UNION或子查询等).#### Type信息解读* ☠️ **ALL**: 最坏的情况, 从头到尾全表扫描.#### Extra信息解读* **Using where**: WHERE条件用于筛选出与下一个表匹配的数据然后返回给客户端. 除非故意做的全表扫描, 否则连接类型是ALL或者是index, 且在Extra列的值中没有Using Where, 则该查询可能是有问题的.",
+                                explain: "# Query: 82B80781965C1027\n\n★ ★ ★ ★ ☆ 95分\n\n```sql\n\nSELECT  \n  * \nFROM  \n  userinfo  \nWHERE  \n  user_id  = 11\n```\n\n##  Explain信息\n\n| id | select\\_type | table | partitions | type | possible_keys | key | key\\_len | ref | rows | filtered | scalability | Extra |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|\n| 1  | SIMPLE | *userinfo* | NULL | const | PRIMARY | PRIMARY | 4 | const | 1 | ☠️ **100.00%** | O(1) | NULL |\n\n\n\n### Explain信息解读\n\n#### SelectType信息解读\n\n* **SIMPLE**: 简单SELECT(不使用UNION或子查询等).\n\n#### Type信息解读\n\n* **const**: const用于使用常数值比较PRIMARY KEY时, 当查询的表仅有一行时, 使用system. 例:SELECT * FROM tbl WHERE col = 1.\n\n\n## 不建议使用 SELECT * 类型查询\n\n* **Item:**  COL.001\n\n* **Severity:**  L1\n\n* **Content:**  当表结构变更时，使用 \\* 通配符选择所有列将导致查询的含义和行为会发生更改，可能导致查询返回更多的数据。\n\n",
                                 errorMessage: null
                             }
                         ],
@@ -447,6 +446,7 @@
 
             }
         </script>
+    </div>
 </body>
 
 </html>

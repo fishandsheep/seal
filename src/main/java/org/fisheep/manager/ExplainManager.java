@@ -14,6 +14,7 @@ import org.fisheep.bean.SqlStatement;
 import org.fisheep.bean.Status;
 import org.fisheep.common.*;
 import org.fisheep.util.PcapUtil;
+import org.fisheep.util.RegexUtil;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -108,7 +109,7 @@ public class ExplainManager {
                     try {
                         String explain = explain(sqlStatement.getContent(), db);
                         sqlStatement.setExplain(explain);
-                        sqlStatement.setScore(explain.length());//TODO
+                        sqlStatement.setScore(RegexUtil.parseScore(explain));
                         explainSqlStatements.add(sqlStatement);
                         successCount.incrementAndGet();
                     } catch (IOException e) {
