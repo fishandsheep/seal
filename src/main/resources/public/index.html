@@ -189,7 +189,7 @@
                                         href="#">
                                         <div x-show="loading">parse</div>
                                         <img x-show="!loading" class="w-9 h-5 animate-spin"
-                                            src="https://www.svgrepo.com/show/199956/loading-loader.svg"
+                                            src="./static/img/loading-loader.svg"
                                             alt="Loading icon">
                                     </a>
                                     <svg t="1722251906995" x-on:click="delDb(index)" x-on:mousemove="db.deleteFlag=true"
@@ -361,7 +361,9 @@
                     })).json();
                     this.resCode = res.code;
                     this.db.message = res.message;
-                    this.dbs = res.result;
+                    if (this.resCode == 200) {
+                        this.dbs = res.result;
+                    }
                 },
                 async upload(i) {
                     this.loading = false;
