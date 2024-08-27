@@ -1,8 +1,7 @@
 package org.fisheep.bean.data;
 
-import org.eclipse.serializer.collections.lazy.LazyArrayList;
-import org.eclipse.serializer.collections.lazy.LazyList;
 import org.eclipse.serializer.persistence.types.PersistenceStoring;
+import org.eclipse.serializer.reference.Lazy;
 import org.fisheep.bean.SqlStatement;
 import org.fisheep.common.StorageManagerFactory;
 import org.fisheep.common.concurrent.ReadWriteLocked;
@@ -15,16 +14,19 @@ import java.util.Map;
  * @author BigOrange
  */
 public class SqlStatements extends ReadWriteLocked {
-    private final Map<String, LazyList<SqlStatement>> sqlStatements = new HashMap<>();
+
+    private Lazy<Map<String, List<SqlStatement>>> lazyMap;
+
+    public Map<String, List<SqlStatement>> getLazyMap() {
+        return Lazy.get(this.lazyMap);
+    }
 
     public void add(String id, List<SqlStatement> statementList) {
         this.add(id, statementList, StorageManagerFactory.getInstance());
     }
 
-    public LazyList<SqlStatement> one(String id) {
-        return this.read(() ->
-                this.sqlStatements.get(id)
-        );
+    public List<SqlStatement> one(String id) {
+        return this.read(() -> Lazy.get(this.lazyMap).get(id));
     }
 
     public void delete(String id) {
@@ -33,22 +35,20 @@ public class SqlStatements extends ReadWriteLocked {
 
     private void add(String id, List<SqlStatement> statementList, PersistenceStoring persistenceStoring) {
         this.write(() -> {
-            LazyList<SqlStatement> lazyList = this.sqlStatements.get(id);
-            if (lazyList == null) {
-                lazyList = new LazyArrayList<>();
-            } else {
-                lazyList.clear();
+            Map<String, List<SqlStatement>> SqlStatementMap = this.getLazyMap();
+            if (SqlStatementMap == null) {
+                this.lazyMap = Lazy.Reference(SqlStatementMap = new HashMap<>());
             }
-            lazyList.addAll(statementList);
-            this.sqlStatements.put(id, lazyList);
-            persistenceStoring.store(sqlStatements);
+            SqlStatementMap.put(id, statementList);
+            persistenceStoring.store(lazyMap);
         });
     }
 
     private void delete(String id, PersistenceStoring persistenceStoring) {
         this.write(() -> {
-            this.sqlStatements.remove(id);
-            persistenceStoring.store(this.sqlStatements);
+            Map<String, List<SqlStatement>> lazyMap1 = getLazyMap();
+            lazyMap1.remove(id);
+            persistenceStoring.store(this.lazyMap);
         });
     }
 }
