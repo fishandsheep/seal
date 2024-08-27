@@ -33,7 +33,12 @@ public class SqlStatements extends ReadWriteLocked {
 
     private void add(String id, List<SqlStatement> statementList, PersistenceStoring persistenceStoring) {
         this.write(() -> {
-            LazyList<SqlStatement> lazyList = new LazyArrayList<>();
+            LazyList<SqlStatement> lazyList = this.sqlStatements.get(id);
+            if (lazyList == null) {
+                lazyList = new LazyArrayList<>();
+            } else {
+                lazyList.clear();
+            }
             lazyList.addAll(statementList);
             this.sqlStatements.put(id, lazyList);
             persistenceStoring.store(sqlStatements);
