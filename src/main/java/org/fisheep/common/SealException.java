@@ -6,7 +6,7 @@ import lombok.Getter;
  * @author BigOrange
  */
 @Getter
-public class SealException extends Exception {
+public class SealException extends RuntimeException {
 
     private int code;
     private String msg;

@@ -17,21 +17,6 @@ public class Status {
     private int status;
 
     /**
-     * 总数
-     */
-    private int total;
-
-    /**
-     * 成功个数
-     */
-    private int success;
-
-    /**
-     * 错误个数
-     */
-    private int error;
-
-    /**
      * 耗时/s
      */
     private long processTime;

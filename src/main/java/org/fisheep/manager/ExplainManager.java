@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author BigOrange
@@ -93,16 +92,15 @@ public class ExplainManager {
         var results = PcapUtil.parseLogFile(uploadedFile, db.getPort());
         var explainId = db.getId() + "|" + timestamp;
         data.sqlStatements().add(explainId, results);
-        data.status().put(explainId, new Status(0, results.size(), 0, 0, 0));
+        data.status().put(explainId, new Status());
 
         ctx.async(() -> {
             ctx.result(new ObjectMapper().writeValueAsString(new Result("connection id: " + db.getId() + " , task timestamp: " + timestamp + " . the file is read successfully and is being parsed")));
             List<SqlStatement> sqlStatements = data.sqlStatements().one(explainId);
-            List<SqlStatement> explainSqlStatements = new ArrayList<>();
             List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-            AtomicInteger successCount = new AtomicInteger(0);
-            AtomicInteger failureCount = new AtomicInteger(0);
+//            AtomicInteger successCount = new AtomicInteger(0);
+//            AtomicInteger failureCount = new AtomicInteger(0);
 
             sqlStatements.forEach(sqlStatement -> {
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
@@ -110,12 +108,14 @@ public class ExplainManager {
                         String explain = explain(sqlStatement.getContent(), db);
                         sqlStatement.setExplain(explain);
                         sqlStatement.setScore(RegexUtil.parseScore(explain));
-                        explainSqlStatements.add(sqlStatement);
-                        successCount.incrementAndGet();
-                    } catch (IOException e) {
-                        sqlStatement.setErrorMessage(e.getMessage());
-                        explainSqlStatements.add(sqlStatement);
-                        failureCount.incrementAndGet();
+                    } catch (Exception e) {
+                        if (e instanceof SealException) {
+                            SealException se = (SealException) e;
+                            sqlStatement.setExplain(se.getMsg());
+                        } else {
+                            sqlStatement.setExplain(e.getMessage());
+                        }
+                        sqlStatement.setScore(RegexUtil.parseScore("-1"));
                     }
                 }, ThreadFactory.getThreadPool());
                 futures.add(future);
@@ -126,22 +126,13 @@ public class ExplainManager {
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HH:mm:ss");
                 String timestampString = now.format(formatter);
                 var time = calculateDifferenceInSeconds(timestamp, timestampString);
-                data.sqlStatements().add(explainId, explainSqlStatements);
-                data.status().put(explainId, new Status(1, sqlStatements.size(), successCount.get(), failureCount.get(), time));
-            }).exceptionally((e) -> {
-                LocalDateTime now = LocalDateTime.now();
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd-HH:mm:ss");
-                var timestampString = now.format(formatter);
-                var time = calculateDifferenceInSeconds(timestamp, timestampString);
-                if (failureCount.get() != sqlStatements.size()) {
-                    data.status().put(explainId, new Status(2, sqlStatements.size(), 0, failureCount.get(), time));
-                }
-                return null;
-            });
+                data.sqlStatements().add(explainId, sqlStatements);
+                data.status().put(explainId, new Status(1, time));
+            }).join();
         });
     }
 
-    private static String explain(String sql, Db db) throws IOException {
+    private static String explain(String sql, Db db) {
         final Process process = getProcess(sql, db);
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
@@ -151,23 +142,29 @@ public class ExplainManager {
             }
             log.debug("soar执行结果：{}", jsonBuilder);
             return jsonBuilder.toString();
+        } catch (Exception e) {
+            throw new SealException("获取soar结果异常", 500, e);
         } finally {
             process.destroy();
         }
     }
 
-    private static Process getProcess(String sql, Db db) throws IOException {
-        List<String> command = new ArrayList<>();
-        //-Dsoar.path=
-        String soarPath = System.getProperty("soar.path");
-        command.add(soarPath);
-        command.add("-query");
-        command.add(sql);
-        command.add("-test-dsn=" + db.getUsername() + ":" + db.getPassword() + "@" + db.getUrl() + ":" + db.getPort() + "/" + db.getSchema());
-        command.add("-allow-online-as-test=true");
-        ProcessBuilder processBuilder = new ProcessBuilder(command);
-        processBuilder.redirectErrorStream(true);
-        return processBuilder.start();
+    private static Process getProcess(String sql, Db db) {
+        try {
+            List<String> command = new ArrayList<>();
+            //-Dsoar.path=
+            String soarPath = System.getProperty("soar.path");
+            command.add(soarPath);
+            command.add("-query");
+            command.add(sql);
+            command.add("-test-dsn=" + db.getUsername() + ":" + db.getPassword() + "@" + db.getUrl() + ":" + db.getPort() + "/" + db.getSchema());
+            command.add("-allow-online-as-test=true");
+            ProcessBuilder processBuilder = new ProcessBuilder(command);
+            processBuilder.redirectErrorStream(true);
+            return processBuilder.start();
+        } catch (IOException e) {
+            throw new SealException("执行soar命令失败", 500, e);
+        }
     }
 
     public static long calculateDifferenceInSeconds(String timestamp1, String timestamp2) {

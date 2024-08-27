@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ThreadFactory {
     private static final ExecutorService CUSTOM_THREAD_POOL = new ThreadPoolExecutor(
-            4,
+            8,
             8,
             60L,
             TimeUnit.SECONDS,
