@@ -89,14 +89,14 @@ public class ExplainManager {
         //再测试下连接
         DbManager.getDbVersion(db);
 
-        var results = PcapUtil.parseLogFile(uploadedFile, db.getPort());
+        var sqlStatements = PcapUtil.parseLogFile(uploadedFile, db.getPort());
         var explainId = db.getId() + "|" + timestamp;
         //data.sqlStatements().add(explainId, results);
         data.status().put(explainId, new Status());
 
         ctx.async(() -> {
             ctx.result(new ObjectMapper().writeValueAsString(new Result("connection id: " + db.getId() + " , task timestamp: " + timestamp + " . the file is read successfully and is being parsed")));
-            List<SqlStatement> sqlStatements = data.sqlStatements().one(explainId);
+            //List<SqlStatement> sqlStatements = data.sqlStatements().one(explainId);
             List<CompletableFuture<Void>> futures = new ArrayList<>();
 
             sqlStatements.forEach(sqlStatement -> {
