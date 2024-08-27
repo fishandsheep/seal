@@ -99,9 +99,6 @@ public class ExplainManager {
             List<SqlStatement> sqlStatements = data.sqlStatements().one(explainId);
             List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-//            AtomicInteger successCount = new AtomicInteger(0);
-//            AtomicInteger failureCount = new AtomicInteger(0);
-
             sqlStatements.forEach(sqlStatement -> {
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     try {
@@ -128,7 +125,7 @@ public class ExplainManager {
                 var time = calculateDifferenceInSeconds(timestamp, timestampString);
                 data.sqlStatements().add(explainId, sqlStatements);
                 data.status().put(explainId, new Status(1, time));
-            }).join();
+            });
         });
     }
 
