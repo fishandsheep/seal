@@ -16,7 +16,7 @@ import java.util.Map;
  * @author BigOrange
  */
 public class SqlStatements extends ReadWriteLocked {
-    private static final Map<String, Lazy<LazyList<SqlStatement>>> sqlStatements = new HashMap<>();
+    private final Map<String, Lazy<LazyList<SqlStatement>>> sqlStatements = new HashMap<>();
 
     public void add(String id, List<SqlStatement> statementList) {
         this.add(id, statementList, StorageManagerFactory.getInstance());
