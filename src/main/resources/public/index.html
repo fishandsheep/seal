@@ -383,7 +383,6 @@
                     this.showAlert = true;
                     this.riskInfo = res.result;
                     this.dbs[i].loading = true;
-                    this.uploadFile = '';
                 },
                 async getExplain() {
                     var res = await (await fetch('/seal/explain', {
