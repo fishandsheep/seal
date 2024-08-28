@@ -1,149 +1,433 @@
-<!DOCTYPE html>
+<!DOCTYPE html class="h-full">
 
 <head>
-    <meta charset="utf-8">
-    <title>mysql风险扫描工具</title>
-    <link href="./static/css/daisyui.css" rel="stylesheet" type="text/css" />
-    <script defer src="./static/js/tailwindcss.js"></script>
-    <script defer src="./static/js/alpine.min.js"></script>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width,  
+                   initial-scale=1.0" />
+    <script src="./static/js/tailwindcss.js"></script>
+    <script src="./static/js/marked.min.js"></script>
+    <script defer src="./static/js/alpinejs.min.js"></script>
 </head>
 
-<body class="bg-neutral-50 font-mono h-full flex flex-col">
-    <header class="border-b border-gray-200 bg-gray-800 text-white">
-        <div class="mx-auto max-w-screen-xl px-4 py-2 sm:px-6 lg:px-8">
-            <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
-                <h1 class="text-2xl font-bold sm:text-3xl">Seal</h1>
-                <div class="flex items-center gap-4 text-2xl">
-                    A tool to find risky SQL by parsing tcpdump files, only supports MySQL 8.x
-                </div>
-                <div class="avatar">
-                    <div class="w-24 rounded-full">
-                        <img src="./static/img/seal.svg"></img>
+<body class="h-full font-mono flex flex-col">
+    <!-- header & log -->
+    <div class="flex justify-center items-center bg-gray-800 px-8 h-24 shadow text-white">
+        <div class="text-3xl mr-4">Seal</div>
+        <div class="text-xl font-light text-gray-300">A tool to find risky SQL by parsing tcpdump files, only
+            supports MySQL 8.x</div>
+        <img class="h-20 rounded-full border ml-4" src="./static/img/seal.svg"></img>
+    </div>
+    <!-- body -->
+    <div class="flex flex-1" x-data="data()" x-init="getAllDbs()">
+        <!-- 侧边栏 -->
+        <div class="flex flex-col justify-between border-e bg-gray-200 w-44">
+            <div class="px-4 py-6">
+                <ul class="mt-6 space-y-2">
+                    <li x-on:click="showActive = true">
+                        <a href="#" x-bind:class="{ 'bg-gray-100': showActive }"
+                            class="block rounded-lg  px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700">
+                            数据连接
+                        </a>
+                    </li>
+                    <li x-on:click="showActive = false">
+                        <a x-on:click="getExplain()" href="#" x-bind:class="{ 'bg-gray-100': !showActive }"
+                            class="block rounded-lg px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-700">
+                            风险扫描
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sticky inset-x-0 bottom-0 border-t border-gray-100">
+                <a href="https://github.com/BigOrange-1124"
+                    class="flex items-center gap-2 bg-white p-4 hover:bg-gray-50">
+                    <img alt="" src="https://avatars.githubusercontent.com/u/175921632?s=100&v=4"
+                        class="size-10 rounded-full object-cover" />
+
+                    <div>
+                        <p class="text-xs">
+                            <strong class="block font-medium">BigOrange-1124</strong>
+
+                        </p>
                     </div>
+                </a>
+            </div>
+        </div>
+        <!-- 数据连接内容区 -->
+        <div x-show="showActive" class="flex flex-col mx-auto mt-8 w-4/5">
+            <!-- 数据库连接信息 -->
+            <div class="flex space-x-4">
+                <div>
+                    <label for="url"
+                        class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600">
+                        <input x-model="db.url" type="text" id="url"
+                            class="ml-2 h-10 peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                            placeholder="url" />
+
+                        <span
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
+                            url
+                        </span>
+                    </label>
+                </div>
+
+                <div>
+                    <label for="port"
+                        class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600">
+                        <input x-model="db.port" type="number" id="port"
+                            class="w-16 ml-2 h-10 peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                            placeholder="port" />
+
+                        <span
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
+                            port
+                        </span>
+                    </label>
+                </div>
+
+                <div>
+                    <label for="schema"
+                        class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600">
+                        <input x-model="db.schema" type="text" id="schema"
+                            class="w-24 ml-2 h-10 peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                            placeholder="schema" />
+
+                        <span
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
+                            schema
+                        </span>
+                    </label>
+                </div>
+
+                <div>
+                    <label for="username"
+                        class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600">
+                        <input x-model="db.username" type="username" id="ip"
+                            class="ml-2 h-10 peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                            placeholder="username" />
+
+                        <span
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
+                            Username
+                        </span>
+                    </label>
+                </div>
+
+                <div>
+                    <label for="password"
+                        class="relative block rounded-md border border-gray-200 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600">
+                        <input x-model="db.password" type="password" id="password"
+                            class="ml-2 h-10 peer border-none bg-transparent placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0"
+                            placeholder="password" />
+
+                        <span
+                            class="pointer-events-none absolute start-2.5 top-0 -translate-y-1/2 bg-white p-0.5 text-xs text-gray-700 transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-0 peer-focus:text-xs">
+                            Password
+                        </span>
+                    </label>
+                </div>
+            </div>
+            <!-- 连接数据库 -->
+            <div class="flex space-x-4 mt-4 ">
+                <a @click="connectDb"
+                    class="inline-block rounded border border-blue-500 px-10 py-3 text-sm font-medium text-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring active:bg-indigo-500"
+                    href="#">
+                    connect
+                </a>
+                <div>
+                    <label for="message"
+                        class="relative block overflow-hidden border-b border-gray-200 bg-transparent pt-3 focus-within:border-blue-600">
+                        <input x-bind:class="resCode == 200 ? 'text-green-600 ':'text-red-600'" x-model="db.message"
+                            type="email" id="message" placeholder="message"
+                            class="peer h-8 w-96 border-none bg-transparent p-0 placeholder-transparent focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
+                            disabled />
+                        <span
+                            class="absolute start-0 top-2 -translate-y-1/2 text-xs transition-all peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-sm peer-focus:top-2 peer-focus:text-xs">
+                            Message
+                        </span>
+                    </label>
+                </div>
+                </a>
+            </div>
+
+            <!-- 数据库列表信息 -->
+            <div class="overflow-x-auto mt-8">
+                <table class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
+                    <thead class="text-left ltr:text-left rtl:text-right font-bold text-gray-900">
+                        <tr>
+                            <th class="whitespace-nowrap px-4 py-2">url</th>
+                            <th class="whitespace-nowrap px-4 py-2">port</th>
+                            <th class="whitespace-nowrap px-4 py-2">schema</th>
+                            <th class="whitespace-nowrap px-4 py-2">username</th>
+                            <th class="whitespace-nowrap px-4 py-2">version</th>
+                            <th class="whitespace-nowrap px-4 py-2">file</th>
+                            <th class="whitespace-nowrap px-4 py-2">operate</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="divide-y divide-gray-200">
+
+                        <template x-for="(db,index) in dbs" :key="index">
+                            <tr class="odd:bg-gray-50"
+                                x-bind:class="{'text-decoration-line: line-through':db.deleteFlag}" x-transition>
+                                <td x-text="db.url" class="whitespace-nowrap px-4 py-2 font-medium text-gray-900"></td>
+                                <td x-text="db.port" class="whitespace-nowrap px-4 py-2 text-gray-700"></td>
+                                <td x-text="db.schema" class="whitespace-nowrap px-4 py-2 text-gray-700"></td>
+                                <td x-text="db.username" class="whitespace-nowrap px-4 py-2 text-gray-700"></td>
+                                <td x-text="db.version" class="whitespace-nowrap px-4 py-2 text-gray-700"></td>
+                                <td class="whitespace-nowrap px-4 py-2 text-gray-700 w-56">
+                                    <div class="relative border-2 rounded-xl">
+                                        <input type="file" id="file"
+                                            class="w-full rounded-md border-gray-200 pe-10 shadow-sm sm:text-sm"
+                                            x-ref="file" @change="uploadFile = $refs.file.files[0]" accept=".pcap" />
+                                    </div>
+                                </td>
+                                <td class="whitespace-nowrap text-gray-700 flex items-center">
+                                    <a x-on:click="upload(index)"
+                                        class="w-14 h-9 my-2 ml-4 px-2 py-2 inline-block rounded border border-blue-500 text-sm font-medium text-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring active:bg-indigo-500"
+                                        href="#">
+                                        <div x-show="db.loading">parse</div>
+                                        <img x-show="!db.loading" class="w-9 h-5 animate-spin"
+                                            src="./static/img/loading-loader.svg"
+                                            alt="Loading icon">
+                                    </a>
+                                    <svg t="1722251906995" x-on:click="delDb(index)" x-on:mousemove="db.deleteFlag=true"
+                                        x-on:mouseout="db.deleteFlag=false" class="icon ml-1 w-6 h-6"
+                                        viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                                        p-id="4576" width="32" height="32">
+                                        <path
+                                            d="M533.333333 42.666667a213.418667 213.418667 0 0 1 209.066667 170.666666H896v85.333334h-384V213.333333h142.08A128.042667 128.042667 0 0 0 405.333333 256v42.666667H170.666667V213.333333h153.6a213.418667 213.418667 0 0 1 209.066666-170.666666zM384 426.666667h85.333333v341.333333H384v-341.333333z m344.32-42.666667h81.706667l3.626666 469.333333c0 70.656-57.6 128-128 128h-341.333333c-70.528 0-128-57.216-128-128V384h85.333333v469.333333c0 23.552 19.2 42.666667 42.666667 42.666667h341.333333c23.381333 0 42.666667-19.2 42.666667-42.666667V384zM554.666667 426.666667h85.333333v341.333333h-85.333333v-341.333333z"
+                                            fill="#d81e06" p-id="4577"></path>
+                                    </svg>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- 风险扫描内容区  -->
+        <div x-show="!showActive" class="flex flex-col mx-auto mt-4 w-4/5">
+            <!-- 风险选择区  -->
+            <div class="flex">
+                <div class="w-60 pr-4">
+                    <label for="HeadlineAct" class="block text-sm font-medium text-gray-900">Connections</label>
+
+                    <select x-model="connection" name="HeadlineAct" id="HeadlineAct"
+                        class="mt-1.5 w-full rounded-lg border-2 border-gray-500 text-gray-700 sm:text-sm py-3 px-2">
+                        <option value="">Please select</option>
+                        <template x-for="(conn,index) in Object.keys(connections)" :key="index">
+                            <option value="conn" x-model="conn" x-text="conn"></option>
+                        </template>
+                    </select>
+                </div>
+                <div class="w-48 pl-4">
+                    <label for="HeadlineAct" class="block text-sm font-medium text-gray-900">Recent 5 Parse</label>
+
+                    <select x-model="recentTime" x-on:change="getParseSqls()" name="HeadlineAct" id="HeadlineAct"
+                        class="mt-1.5 w-full rounded-lg border-2 border-gray-500 text-gray-700 sm:text-sm py-3 px-2">
+                        <option value="">Please select</option>
+                        <template x-for="(recent,index) in connections[connection]" :key="index">
+                            <option value="recent" x-model="recent" x-text="recent"></option>
+                        </template>
+                    </select>
+                </div>
+            </div>
+            <!-- 风险SQL列表 -->
+            <div class="rounded-lg border border-gray-200 mt-4">
+                <div class="overflow-x-auto rounded-t-lg">
+                    <table class="min-w-full divide-y-2 divide-gray-200 bg-white text-sm">
+                        <thead class="text-left ltr:text-left rtl:text-right font-bold text-gray-900">
+                            <tr>
+                                <th class="whitespace-nowrap px-4 py-2">Sql Content</th>
+                                <th class="whitespace-nowrap px-4 py-2">Score</th>
+                                <th class="whitespace-nowrap px-4 py-2">Count</th>
+                                <th class="whitespace-nowrap px-4 py-2">Max Time(ms)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 text-gray-700">
+                            <template x-for="(sql,index) in sqls.result" :key="index">
+                                <tr>
+                                    <td x-text="sql.content" x-model="sql.connect"
+                                        class="whitespace-nowrap px-4 py-4 text-wrap"></td>
+                                    <td x-on:click="riskInfo = sql.explain;showAlert=true;" x-text="sql.score"
+                                        class="whitespace-nowrap px-4 py-2 text-blue-600 underline hover:cursor-pointer">
+                                    </td>
+                                    <td x-text="sql.count" class="whitespace-nowrap px-4 py-2"></td>
+                                    <td x-text="sql.maxTakeTime" class="whitespace-nowrap px-4 py-2"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- 翻页按钮 -->
+                <div class="rounded-b-lg border-t border-gray-200 px-4 py-2">
+                    <ol class="flex justify-end gap-1 text-xs font-medium">
+                        <li x-on:click="nextPage(-1)">
+                            <a href="#"
+                                class="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
+                                <span class="sr-only">Prev Page</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </a>
+                        </li>
+
+                        <template x-for="page in sqls.totalPages" :key="page">
+                            <li x-on:click="changePage(page)" class="border-gray-100 bg-white text-gray-900">
+                                <a href="#" x-text="page"
+                                    :class="{ 'border-blue-600 bg-blue-600 text-white' : currentPage == page}"
+                                    class="block size-8 rounded border text-center leading-8 ">
+                                </a>
+                            </li>
+                        </template>
+
+                        <li x-on:click="nextPage(1)">
+                            <a href="#"
+                                class="inline-flex size-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180">
+                                <span class="sr-only">Next Page</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </a>
+                        </li>
+                    </ol>
                 </div>
             </div>
         </div>
-    </header>
+        <!-- soar 风险弹窗 -->
+        <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2  text-white p-4 z-50">
+            <div x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 transform scale-90"
+                x-transition:enter-end="opacity-100 transform scale-100"
+                x-transition:leave="transition ease-in duration-300"
+                x-transition:leave-start="opacity-100 transform scale-100"
+                x-transition:leave-end="opacity-0 transform scale-90" x-show="showAlert" role="alert"
+                class="flex rounded-xl border-2 shadow-gray-800 border-gray-100 bg-gray-50 p-4 w-auto shadow-lg">
+                <div class="flex items-start gap-4">
+                    <span class="text-green-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </span>
 
-    <div class="mx-auto max-w-screen-xl px-4 py-8" x-data="{
-        db: {} ,
-        support: false,
-        msg: '',
-        uploadFile:'',
-        sqls: {
-            totalRecords: 0,
-            totalPages: 0
-        },
-        loading: false,
-        currentPage: 1,
-        pageSize: 10,
-        async connect() {
-            this.db.version = 'connecting...';
-            var res = await (await fetch('/connect',{
-                method: 'POST',
-                body: JSON.stringify(this.db),
-            })).json();
-           this.db.version = res.version;
-           this.db.id = res.id;
-           if(res.version.charAt(0) === '8') {
-                this.support = true;
-                this.msg = 'support version';
-           }else{
-                this.support = false;
-                this.msg = 'mysql version must >= 8.x';
-           }
-        },
-        async parse(page) {
-            if (this.currentPage < 1) {
-                this.currentPage = 1;
-                return;
-            }
-            
-            if(!page){
-                this.loading = true;
-            }
-            var formData = new FormData();
-            formData.append('file',this.uploadFile);
-            formData.append('id', this.db.id);
-            formData.append('currentPage', this.currentPage);
-            formData.append('pageSize', this.pageSize);
-            var res = await (await fetch('/upload',{
-                method: 'POST',
-                body: formData,
-            })).json();
-            this.sqls = res;
-            this.loading = false;
-        },
-        async exportSql() {
-            console.log('to do export')
-        },
-    }">
-        <div class="flex">
-            <input class="flex-none w-64 input input-bordered mr-2" x-model="db.url" type="url" name="url"
-                placeholder="Url" />
-            <input class="flex-initial w-18  input input-bordered ml-2 mr-2" x-model="db.port" type="number"
-                value="3306" name="port" placeholder="Port" />
-            <input class="flex-initial w-18  input input-bordered ml-2" x-model="db.schema" type="text" name="schema"
-                placeholder="Schema" />
-            <input class="flex-initial w-18  input input-bordered ml-2 mr-2" x-model="db.username" type="text"
-                name="username" placeholder="Username" />
-            <input class="flex-initial w-18  input input-bordered ml-2 mr-2" x-model="db.password" type="password"
-                name="password" placeholder="Password" />
-        </div>
+                    <div class="flex-1">
+                        <strong class="block font-medium text-gray-900"> Risk Info </strong>
 
-        <div class="flex pt-2">
-            <button class="btn btn-info mr-2" @click="connect">Connect</button>
-            <input class="input input-bordered ml-2" x-model="db.version" type="text" name="version"
-                placeholder="Version" disabled />
-        </div>
-        <div class="flex pt-2">
-            <input type="file" class="file-input file-input-bordered file-input-info w-full max-w-xs mr-2" x-ref="file"
-                @change="uploadFile = $refs.file.files[0]" accept=".pcap" />
-            <button class="btn btn-active ml-2" @click="parse(0)"><span class="loading loading-spinner"
-                    x-show="loading"></span>Parse</button>
-        </div>
+                        <div x-html="marked.parse(riskInfo)" class="mt-1 text-sm text-gray-700"></div>
+                    </div>
 
-
-        <div class="h-full overflow-x-auto flex-1">
-            <table class="table table-sm">
-                <thead>
-                    <tr>
-                        <th scope="col">Sql Content</th>
-                        <th scope="col">Count</th>
-                        <th scope="col">Max Time(ms)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <template x-for="(sql,index) in sqls.result" :key="index">
-                        <tr>
-                            <td x-text="sql.content"></td>
-                            <td x-text="sql.count"></td>
-                            <td x-text="sql.maxTakeTime"></td>
-                        </tr>
-                    </template>
-                </tbody>
-            </table>
-        </div>
-        <div class="fixed bottom-4">
-
-            <div class="flex pt-4 pb-12 items-center">
-                <button class="btn btn-info" x-bind:disabled="sqls.totalRecords == 0" @click="exportSql">Export</button>
-                <div class="ml-32 mr-2" x-text="'第' +sqls.totalPages+ '页'"></div>
-                <div class="join">
-                    <button class="join-item btn" :disabled="currentPage == 1" @click="parse(currentPage--)">«</button>
-                    <button class="join-item btn" x-model="currentPage" x-text="'Page ' + currentPage"></button>
-                    <button class="join-item btn" :disabled="currentPage >= sqls.totalPages"
-                        @click="parse(currentPage++)">»</button>
+                    <button class="text-gray-500 transition hover:text-gray-600">
+                        <svg x-on:click="showAlert=false" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
-                <div class="ml-64" x-text="'共' +sqls.totalRecords+ '条'"></div>
             </div>
         </div>
     </div>
-    <footer class="footer footer-center bg-gray-100 text-base-content p-4 bottom-0 fixed">
-        <aside>
-            <p>Copyright © 2024 - All right reserved by fisheep</p>
-        </aside>
-    </footer>
+
+    <script>
+        function data() {
+            return {
+                async getAllDbs() {
+                    var res = await (await fetch('/seal/db', {
+                        method: 'GET'
+                    })).json();
+                    this.dbs = res.result;
+                    this.dbs.forEach(o => {
+                        o.loading = true;
+                    })
+                },
+
+                async delDb(index) {
+                    var res = await (await fetch('/seal/db/' + index, {
+                        method: 'DELETE'
+                    })).json();
+                    this.dbs = res.result;
+                },
+                async connectDb() {
+                    delete this.db.message;
+                    var res = await (await fetch('/seal/db', {
+                        method: 'POST',
+                        body: JSON.stringify(this.db)
+                    })).json();
+                    this.resCode = res.code;
+                    this.db.message = res.message;
+                    if (this.resCode == 200) {
+                        this.dbs = res.result;
+                        this.dbs.forEach(o => {
+                            o.loading = true;
+                        })
+                    }
+                },
+                async upload(i) {
+                    this.dbs[i].loading = false;
+                    var formData = new FormData();
+                    formData.append('file', this.uploadFile);
+                    formData.append('id', i);
+                    var res = await (await fetch('/seal/upload', {
+                        method: 'POST',
+                        body: formData,
+                    })).json();
+                    this.showAlert = true;
+                    this.riskInfo = res.result;
+                    this.dbs[i].loading = true;
+                },
+                async getExplain() {
+                    var res = await (await fetch('/seal/explain', {
+                        method: 'GET'
+                    })).json();
+                    this.connections = res.result;
+                },
+                async getParseSqls() {
+                    var formData = new FormData();
+                    formData.append('explainId', this.connection + '|' + this.recentTime);
+                    formData.append('currentPage', this.currentPage);
+                    formData.append('pageSize', 10);
+                    var res = await (await fetch('/seal/explain/result', {
+                        method: 'POST',
+                        body: formData,
+                    })).json();
+                    this.sqls = res;
+                },
+                db: {},
+                loading: true,
+                resCode: 200,
+                currentPage: 1,
+                showActive: true,
+                dbs: [],
+                uploadFile: '',
+                connections: {},
+                connection: '',
+                recentTimes: [],
+                recentTime: '',
+                riskInfo: '',
+                sqls: {},
+                showAlert: false,
+                changePage(index) {
+                    this.currentPage = index;
+                    this.getParseSqls();
+                },
+                nextPage(count) {
+                    if ((this.currentPage > 1 && count == -1) || (this.currentPage < this.sqls.totalPages && count == 1)) {
+                        this.currentPage = this.currentPage + count;
+                        this.getParseSqls();
+                    }
+                }
+            }
+        }
+    </script>
 </body>
 
 </html>

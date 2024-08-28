@@ -1,46 +1,51 @@
 package org.fisheep;
 
 import io.javalin.Javalin;
-import io.javalin.http.UploadedFile;
 import io.javalin.http.staticfiles.Location;
-import org.fisheep.bean.Db;
-import org.fisheep.bean.SqlStatement;
-import org.fisheep.bean.data.Data;
-import org.fisheep.common.PageResult;
-import org.fisheep.logic.DbFactory;
-import org.fisheep.util.PcapUtil;
+import io.javalin.http.util.NaiveRateLimit;
+import org.eclipse.serializer.reference.Lazy;
+import org.eclipse.serializer.reference.LazyReferenceManager;
+import org.fisheep.common.Result;
+import org.fisheep.common.SealException;
+import org.fisheep.common.ThreadFactory;
+import org.fisheep.manager.DbManager;
+import org.fisheep.manager.ExplainManager;
 
-import java.util.List;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
+
+import static io.javalin.apibuilder.ApiBuilder.*;
 
 public class SealApplication {
 
     public static void main(String[] args) {
-        final Data data = new Data().data();
+        LazyReferenceManager.get().stop().clear();
+        LazyReferenceManager.set(LazyReferenceManager.New(Lazy.Checker(Duration.ofMinutes(1).toMillis(), 0.75)));
+
         var app = Javalin.create(config -> {
             config.staticFiles.add("/public", Location.CLASSPATH);
-        }).start(7070);
+            config.http.defaultContentType = "text/plain; charset=utf-8";
+            config.router.contextPath = "/seal";
 
-        app.post("/connect", ctx -> {
-            Db db = ctx.bodyAsClass(Db.class);
-            DbFactory.getDbVersion(db);
-            db.setPassword(null);
-            data.dbs().add(db.getId(), db);
-            ctx.json(db);
-        });
+            config.requestLogger.http((ctx, ms) -> System.out.println(ctx.path() + "接口耗时：" + ms + "ms"));
+            config.router.apiBuilder(() -> path("/db", () -> {
+                get(DbManager::all);
+                post(DbManager::add);
+                path("/{id}", () -> delete(DbManager::delete));
+            })).apiBuilder(() -> path("/export", () -> post(ExplainManager::export))).apiBuilder(() -> path("/explain", () -> {
+                get(DbManager::dbAndTimestamp);
+                path("/result", () -> post(ExplainManager::pageOne));
+                path("/status", () -> post(ExplainManager::status));
+            }));
+        }).post("/upload", ctx -> {
+            NaiveRateLimit.requestPerTimeUnit(ctx, 10, TimeUnit.MINUTES);
+            NaiveRateLimit.requestPerTimeUnit(ctx, 1, TimeUnit.SECONDS);
+            ExplainManager.upload(ctx);
+        }).exception(SealException.class, (e, ctx) -> ctx.json(new Result(e.getCode(), e.getMsg()))).start(7070);
 
-        app.post("/upload", ctx -> {
-            UploadedFile uploadedFile = ctx.uploadedFile("file");
-            String id = ctx.formParam("id");
-            Db db = DbFactory.dbConfigs.get(id);
-            List<SqlStatement> results = PcapUtil.parseLogFile(uploadedFile, db.getPort());
-            data.sqlStatements().add(id, results);
-            List<SqlStatement> sqlStatements = data.sqlStatements().all(id);
-            PageResult<SqlStatement> pageResult = new PageResult<>(sqlStatements, Integer.parseInt(ctx.formParam("currentPage")), Integer.parseInt(ctx.formParam("pageSize")));
-            //TODO 异步？
-//            List<SqlStatement> subList = sqlStatements.subList(0, 10);
-            //TODO 增加风险解析方法
-            ctx.json(pageResult);
-        });
+        app.sse("/explain/status/{explainId}", ExplainManager::sendStatus);
 
+        Runtime.getRuntime().addShutdownHook(new Thread(ThreadFactory::shutdown));
+        Runtime.getRuntime().addShutdownHook(new Thread(app::stop));
     }
 }

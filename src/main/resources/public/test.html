@@ -1,38 +1,151 @@
 <!DOCTYPE html>
 
 <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width,  
-                   initial-scale=1.0" />
-    <script src="https://cdn.tailwindcss.com"></script>
-
+    <meta charset="utf-8">
+    <title>mysql风险扫描工具</title>
+    <link href="./static/css/daisyui.css" rel="stylesheet" type="text/css" />
+    <script defer src="./static/js/tailwindcss.js"></script>
+    <script defer src="./static/js/alpine.min.js"></script>
 </head>
 
-<body class="h-screen bg-gray-400 font-mono flex flex-col">
+<body class="bg-neutral-50 font-mono h-screen flex flex-col">
 
-    <div class="flex justify-center items-center bg-gray-800 px-8 h-24 shadow text-white">
-            <div class="text-3xl mr-4">Seal</div>
-            <div class="text-xl font-light text-gray-300">A tool to find risky SQL by parsing tcpdump files, only
-                supports MySQL 8.x</div>
-                <img class="h-20 rounded-full border ml-4" src="./static/img/seal.svg"></img>
+    
+    <header class="border-b border-gray-200 bg-gray-800 text-white">
+        <div class="mx-auto max-w-screen-xl px-4 py-2 sm:px-6 lg:px-8">
+            <div class="flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between">
+                <h1 class="text-2xl font-bold sm:text-3xl">Seal</h1>
+                <div class="flex items-center gap-4 text-2xl">
+                    A tool to find risky SQL by parsing tcpdump files, only supports MySQL 8.x
+                </div>
+                <div class="avatar">
+                    <div class="w-24 rounded-full">
+                        <img src="./static/img/seal.svg"></img>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>+
+
+    <div class="mx-auto px-4 py-8" x-data="{
+        db: {} ,
+        support: false,
+        msg: '',
+        uploadFile:'',
+        sqls: {
+            totalRecords: 0,
+            totalPages: 0
+        },
+        loading: false,
+        currentPage: 1,
+        pageSize: 10,
+        async connect() {
+            this.db.version = 'connecting...';
+            var res = await (await fetch('/connect',{
+                method: 'POST',
+                body: JSON.stringify(this.db),
+            })).json();
+           this.db.version = res.version;
+           this.db.id = res.id;
+           if(res.version.charAt(0) === '8') {
+                this.support = true;
+                this.msg = 'support version';
+           }else{
+                this.support = false;
+                this.msg = 'mysql version must >= 8.x';
+           }
+        },
+        async parse(page) {
+            if (this.currentPage < 1) {
+                this.currentPage = 1;
+                return;
+            }
+            
+            if(!page){
+                this.loading = true;
+            }
+            var formData = new FormData();
+            formData.append('file',this.uploadFile);
+            formData.append('id', this.db.id);
+            formData.append('currentPage', this.currentPage);
+            formData.append('pageSize', this.pageSize);
+            var res = await (await fetch('/upload',{
+                method: 'POST',
+                body: formData,
+            })).json();
+            this.sqls = res;
+            this.loading = false;
+        },
+        async exportSql() {
+            console.log('to do export')
+        },
+    }">
+        <div class="flex">
+            <input class="flex-none w-64 input input-bordered mr-2" x-model="db.url" type="url" name="url"
+                placeholder="Url" />
+            <input class="flex-initial w-18  input input-bordered ml-2 mr-2" x-model="db.port" type="number"
+                value="3306" name="port" placeholder="Port" />
+            <input class="flex-initial w-18  input input-bordered ml-2" x-model="db.schema" type="text" name="schema"
+                placeholder="Schema" />
+            <input class="flex-initial w-18  input input-bordered ml-2 mr-2" x-model="db.username" type="text"
+                name="username" placeholder="Username" />
+            <input class="flex-initial w-18  input input-bordered ml-2 mr-2" x-model="db.password" type="password"
+                name="password" placeholder="Password" />
+        </div>
+
+        <div class="flex pt-2">
+            <button class="btn btn-info mr-2" @click="connect">Connect</button>
+            <input class="input input-bordered ml-2" x-model="db.version" type="text" name="version"
+                placeholder="Version" disabled />
+        </div>
+        <div class="flex pt-2">
+            <input type="file" class="file-input file-input-bordered file-input-info w-full max-w-xs mr-2" x-ref="file"
+                @change="uploadFile = $refs.file.files[0]" accept=".pcap" />
+            <button class="btn btn-active ml-2" @click="parse(0)"><span class="loading loading-spinner"
+                    x-show="loading"></span>Parse</button>
+        </div>
+
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th scope="col">Sql Content</th>
+                    <th scope="col">Count</th>
+                    <th scope="col">Max Time(ms)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for="(sql,index) in sqls.result" :key="index">
+                    <tr>
+                        <td x-text="sql.content"></td>
+                        <td x-text="sql.count"></td>
+                        <td x-text="sql.maxTakeTime"></td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+        <div class="fixed bottom-4">
+
+            <div class="flex pt-4 pb-12 items-center">
+                <button class="btn btn-info" x-bind:disabled="sqls.totalRecords == 0" @click="exportSql">Export</button>
+                <div class="ml-32 mr-2" x-text="'第' +sqls.totalPages+ '页'"></div>
+                <div class="join">
+                    <button class="join-item btn" :disabled="currentPage == 1" @click="parse(currentPage--)">«</button>
+                    <button class="join-item btn" x-model="currentPage" x-text="'Page ' + currentPage"></button>
+                    <button class="join-item btn" :disabled="currentPage >= sqls.totalPages"
+                        @click="parse(currentPage++)">»</button>
+                </div>
+                <div class="ml-64" x-text="'共' +sqls.totalRecords+ '条'"></div>
+            </div>
+        </div>
     </div>
 
-    <div class="flex flex-1 flex-col">
-        <div class="border-2 p-2 m-2 mx-auto">
-            <input class="w-36" type="text" placeholder="url">
-            <input class="w-12" type="number" placeholder="port">
-            <input class="w-14" type="text" placeholder="schema">
-            <input class="w-20" type="text" placeholder="username">
-            <input class="w-20" type="password" placeholder="password">
-           
-        </div>
-        <div>
-            <div>table list 区域</div>
-            <div>页码区域</div>
-        </div>
-    </div>
 
+
+    <footer class="footer footer-center bg-gray-100 text-base-content p-4 bottom-0 fixed">
+        <aside>
+            <p>Copyright © 2024 - All right reserved by fisheep</p>
+        </aside>
+    </footer>
 </body>
 
 </html>
