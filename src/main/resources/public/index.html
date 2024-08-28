@@ -187,8 +187,8 @@
                                     <a x-on:click="upload(index)"
                                         class="w-14 h-9 my-2 ml-4 px-2 py-2 inline-block rounded border border-blue-500 text-sm font-medium text-blue-500 hover:bg-blue-500 hover:text-white focus:outline-none focus:ring active:bg-indigo-500"
                                         href="#">
-                                        <div x-show="loading">parse</div>
-                                        <img x-show="!loading" class="w-9 h-5 animate-spin"
+                                        <div x-show="db.loading">parse</div>
+                                        <img x-show="!db.loading" class="w-9 h-5 animate-spin"
                                             src="./static/img/loading-loader.svg"
                                             alt="Loading icon">
                                     </a>
@@ -363,10 +363,13 @@
                     this.db.message = res.message;
                     if (this.resCode == 200) {
                         this.dbs = res.result;
+                        this.dbs.forEach(o => {
+                            o.loading = false;
+                        })
                     }
                 },
                 async upload(i) {
-                    this.loading = false;
+                    this.dbs[i].loading = false;
                     var formData = new FormData();
                     formData.append('file', this.uploadFile);
                     formData.append('id', i);
@@ -376,7 +379,7 @@
                     })).json();
                     this.showAlert = true;
                     this.riskInfo = res.result;
-                    this.loading = true;
+                    this.dbs[i].loading = true;
                 },
                 async getExplain() {
                     var res = await (await fetch('/seal/explain', {
@@ -400,7 +403,7 @@
                 resCode: 200,
                 currentPage: 1,
                 showActive: true,
-                dbs: [{ url: '1' }],
+                dbs: [],
                 uploadFile: '',
                 connections: {},
                 connection: '',
