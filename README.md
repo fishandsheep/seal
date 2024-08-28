@@ -19,14 +19,16 @@
     wget https://github.com/fishandsheep/soar/releases/download/1.0/soar
     chmod +x soar
     ```
-2. 使用`tcpdump`命令监控数据库
+2. `jdbcurl`上添加`useSSL=false`参数(使用了SS加密,无法解析`tcpdump`下来的文件)
 
-    `tcpdump`文件是通过linux的`tcpdump`命令生成标准的`.pcap`文件，通过解析文件获取相应的sql。
+3. 使用`tcpdump`命令获取网络抓包文件
+
+    `tcpdump`文件是通过linux的`tcpdump`命令生成标准的`.pcap`文件，通过解析二进制文件获取sql。
     
-    `tcpdump`命令需要`root`或 `sudo`权限，例如执行如下的命令：
+    `tcpdump`命令需要`root`或 `sudo`权限，例如：
     
     ```shell
-    tcpdump -i eth0 -s 0 -w mysql.pcap 'port 3306'
+    sudo tcpdump -i eth0 -s 0 -w mysql.pcap 'port 3306'
     ```
     
     `-i eth0` : 监控 eth0 网卡
@@ -36,16 +38,35 @@
     `-w mysql.pcap`: 保存的文件名称
     
     `port 3306` : 指定通过3306端口的数据，**包含目标端口和源端口，包含源端口为了获取sql的耗时**
-    
-    **注意**：可解析的`.pcap`文件需要的应用`jdbcurl`上存在`useSSL=false`参数
+
 ### 启动项目
-1. 下载项目，编译
-2. 启动项目增加`-Dsoar.path=/root/soar`参数
+1. 获取项目，需要`java version >= 17`
+   
+    - 方式一：直接下载发布的jar包
+       
+    - 方式二：手动编译jar包
+       ```
+       git clone https://github.com/fishandsheep/seal.git
+       cd seal
+       mvn clean package
+       ```
+3. 启动项目增加`-Dsoar.path=/root/soar`参数
    ```
    nuhup java -Dsoar.path=/root/soar  -jar seal-1.0-SNAPSHOT.jar &
    ```
-3. 访问 `http://xxx.xxx.xxx.xxx:7070/seal`
+4. 访问 `http://ip:7070/seal`
+
+### 如何使用
+1. 创建数据库连接
+   
+2. 解析上传的`.pcap`文件
+   
+3. 查看解析的sql,获取sql风险得分`Score`、sql执行的次数`Count`、sql最长的执行时间`Max Time`
+   
+4. 点击风险得分，查看sql风险详情、sql优化建议、sql执行计划解读(若数据库能正常连接) 
+
 ### 演示视频
+TODO
 
 ## 特别感谢
 | 框架            | 技术           | 官网                       |
