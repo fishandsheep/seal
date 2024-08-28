@@ -364,7 +364,7 @@
                     if (this.resCode == 200) {
                         this.dbs = res.result;
                         this.dbs.forEach(o => {
-                            o.loading = false;
+                            o.loading = true;
                         })
                     }
                 },
@@ -380,6 +380,7 @@
                     this.showAlert = true;
                     this.riskInfo = res.result;
                     this.dbs[i].loading = true;
+                    this.uploadFile = '';
                 },
                 async getExplain() {
                     var res = await (await fetch('/seal/explain', {
