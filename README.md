@@ -43,28 +43,40 @@
 1. 获取项目，需要`java version >= 17`
    
     - 方式一：直接下载发布的jar包
-       
+      [seal-1.0-beta.jar](https://github.com/fishandsheep/seal/releases/download/1.0-beta/seal-1.0-beta.jar)
+      
     - 方式二：手动编译jar包
        ```
        git clone https://github.com/fishandsheep/seal.git
        cd seal
        mvn clean package
        ```
+       
 3. 启动项目增加`-Dsoar.path=/root/soar`参数
    ```
    nuhup java -Dsoar.path=/root/soar  -jar seal-1.0-SNAPSHOT.jar &
    ```
+   
 4. 访问 `http://ip:7070/seal`
 
 ### 如何使用
 1. 创建数据库连接
+ 
    <img src=image/connectdb.png/>
+   
 2. 解析上传的`.pcap`文件
+
    <img src=image/parse.png/>
+   
 3. 查看解析的sql,获取sql风险得分`Score`、sql执行的次数`Count`、sql最长的执行时间`Max Time`
+
    <img src=image/risksql.png/>
-4. 点击风险得分，查看sql风险详情、sql优化建议、sql执行计划解读(若数据库能正常连接) 
+   
+4. 点击风险得分，查看sql风险详情、sql优化建议、sql执行计划解读(若数据库能正常连接)
+
     <img src=image/riskinfo.png/>
+
+    
 ### 演示视频
 TODO
 
