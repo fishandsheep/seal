@@ -58,13 +58,13 @@
 
 ### 如何使用
 1. 创建数据库连接
-   
+   <img src=image/connectdb.png/>
 2. 解析上传的`.pcap`文件
-   
+   <img src=image/parse.png/>
 3. 查看解析的sql,获取sql风险得分`Score`、sql执行的次数`Count`、sql最长的执行时间`Max Time`
-   
+   <img src=image/risksql.png/>
 4. 点击风险得分，查看sql风险详情、sql优化建议、sql执行计划解读(若数据库能正常连接) 
-
+    <img src=image/riskinfo.png/>
 ### 演示视频
 TODO
 
