@@ -345,6 +345,9 @@
                         method: 'GET'
                     })).json();
                     this.dbs = res.result;
+                    this.dbs.forEach(o => {
+                        o.loading = true;
+                    })
                 },
 
                 async delDb(index) {
