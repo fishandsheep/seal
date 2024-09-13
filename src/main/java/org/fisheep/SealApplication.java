@@ -3,6 +3,7 @@ package org.fisheep;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.http.util.NaiveRateLimit;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.serializer.reference.Lazy;
 import org.eclipse.serializer.reference.LazyReferenceManager;
 import org.fisheep.common.Result;
@@ -16,18 +17,24 @@ import java.util.concurrent.TimeUnit;
 
 import static io.javalin.apibuilder.ApiBuilder.*;
 
+@Slf4j
 public class SealApplication {
 
     public static void main(String[] args) {
+
         LazyReferenceManager.get().stop().clear();
         LazyReferenceManager.set(LazyReferenceManager.New(Lazy.Checker(Duration.ofMinutes(1).toMillis(), 0.75)));
 
         var app = Javalin.create(config -> {
+
             config.staticFiles.add("/public", Location.CLASSPATH);
             config.http.defaultContentType = "text/plain; charset=utf-8";
             config.router.contextPath = "/seal";
 
-            config.requestLogger.http((ctx, ms) -> System.out.println(ctx.path() + "接口耗时：" + ms + "ms"));
+            config.requestLogger.http((ctx, ms) ->
+                    log.debug("{}接口耗时：{}ms", ctx.path(), ms)
+            );
+
             config.router.apiBuilder(() -> path("/db", () -> {
                 get(DbManager::all);
                 post(DbManager::add);
