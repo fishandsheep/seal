@@ -1,7 +1,8 @@
 package org.fisheep.bean.data;
 
 /**
- * @author BigOrange
+ * 数据根类
+ * 管理所有数据存储对象
  */
 public class Data {
 
@@ -11,6 +12,8 @@ public class Data {
 
     private final Statuses statuses = new Statuses();
 
+    private final ExplainResults explainResults = new ExplainResults();
+
     public SqlStatements sqlStatements() {
         return this.sqlStatements;
     }
@@ -19,8 +22,11 @@ public class Data {
         return this.dbs;
     }
 
-    public Statuses status() {
+    public Statuses statuses() {
         return this.statuses;
     }
 
+    public ExplainResults explainResults() {
+        return this.explainResults;
+    }
 }

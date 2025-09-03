@@ -46,7 +46,7 @@ public class ExplainManager {
 
     public static void status(Context ctx) throws SealException {
         var explainId = ctx.formParam("explainId");
-        var one = StorageManagerFactory.data().status().one(explainId);
+        var one = StorageManagerFactory.data().statuses().one(explainId);
         if (one == null) {
             throw new SealException(ErrorEnum.TASK_NOT_FOUND);
         }
@@ -92,7 +92,7 @@ public class ExplainManager {
         var sqlStatements = PcapUtil.parseLogFile(uploadedFile, db.getPort());
         var explainId = db.getId() + "|" + timestamp;
         //data.sqlStatements().add(explainId, results);
-        data.status().put(explainId, new Status());
+        data.statuses().put(explainId, new Status());
 
         ctx.async(() -> {
             ctx.result(new ObjectMapper().writeValueAsString(new Result("connection id: " + db.getId() + " , task timestamp: " + timestamp + " . the file is read successfully and is being parsed")));
@@ -104,7 +104,7 @@ public class ExplainManager {
                     try {
                         String explain = explain(sqlStatement.getContent(), db);
                         sqlStatement.setExplain(explain);
-                        sqlStatement.setScore(RegexUtil.parseScore(explain));
+                        sqlStatement.setScore(Double.parseDouble(RegexUtil.parseScore(explain)));
                     } catch (Exception e) {
                         if (e instanceof SealException) {
                             SealException se = (SealException) e;
@@ -112,7 +112,7 @@ public class ExplainManager {
                         } else {
                             sqlStatement.setExplain(e.getMessage());
                         }
-                        sqlStatement.setScore(RegexUtil.parseScore("-1"));
+                        sqlStatement.setScore(-1.0);
                     }
                 }, ThreadFactory.getThreadPool());
                 futures.add(future);
@@ -124,7 +124,7 @@ public class ExplainManager {
                 String timestampString = now.format(formatter);
                 var time = calculateDifferenceInSeconds(timestamp, timestampString);
                 data.sqlStatements().add(explainId, sqlStatements);
-                data.status().put(explainId, new Status(1, time));
+                data.statuses().put(explainId, new Status(1, time));
             });
         });
     }
@@ -176,7 +176,7 @@ public class ExplainManager {
     }
 
     private static boolean isTaskCompleted(String explainId) {
-        var one = StorageManagerFactory.data().status().one(explainId);
+        var one = StorageManagerFactory.data().statuses().one(explainId);
         return one.getStatus() == 1;
     }
 }

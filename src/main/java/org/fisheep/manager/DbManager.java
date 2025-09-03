@@ -66,7 +66,7 @@ public class DbManager {
             DataSource dataSource = createDataSource(db);
             connection = dataSource.getConnection();
         } catch (HikariPool.PoolInitializationException | SQLException e) {
-            throw new SealException(ErrorEnum.MySQL_CONNECTION_FAIL);
+            throw new SealException(ErrorEnum.MYSQL_CONNECTION_FAIL);
         }
         try {
             PreparedStatement statement = connection.prepareStatement("select version() as version");

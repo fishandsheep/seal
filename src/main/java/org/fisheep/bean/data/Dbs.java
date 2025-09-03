@@ -90,7 +90,7 @@ public class Dbs extends ReadWriteLocked {
                 String removeTimestampString = timestamps.remove(0);
                 var data = StorageManagerFactory.data();
                 data.sqlStatements().delete(db.getId() + removeTimestampString);
-                data.status().delete(db.getId() + removeTimestampString);
+                data.statuses().delete(db.getId() + removeTimestampString);
             }
             timestamps.add(timestampString);
             dbs.get(id).setTimestamps(timestamps);

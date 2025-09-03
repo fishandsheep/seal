@@ -1,6 +1,6 @@
 package org.fisheep.util;
 
-
+import lombok.extern.slf4j.Slf4j;
 import io.javalin.http.UploadedFile;
 import io.kaitai.struct.ByteBufferKaitaiStream;
 import org.apache.commons.lang3.ArrayUtils;
@@ -16,6 +16,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class PcapUtil {
 
     static Pattern lineBreakPattern = Pattern.compile("(\\r?\\n)+");
@@ -119,7 +120,7 @@ public class PcapUtil {
 
 
             } catch (Exception e) {
-                //TODO
+                log.warn("Failed to parse SQL from packet", e);
             }
 
         }
