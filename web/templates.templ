@@ -1,0 +1,336 @@
+package web
+
+import (
+	"fmt"
+	"github.com/fishandsheep/seal/internal/model"
+	"github.com/fishandsheep/seal/web/components/alert"
+	"github.com/fishandsheep/seal/web/components/badge"
+	"github.com/fishandsheep/seal/web/components/button"
+	"github.com/fishandsheep/seal/web/components/dialog"
+	"github.com/fishandsheep/seal/web/components/input"
+	tableui "github.com/fishandsheep/seal/web/components/table"
+)
+
+templ Layout(d PageData) {
+	<!doctype html>
+	<html lang="zh-CN">
+		<head>
+			<meta charset="utf-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<meta name="color-scheme" content="light"/>
+			<title>{ d.Title } · Seal</title>
+			<link rel="icon" href={ d.Base + "/assets/img/seal.svg" }/>
+			<link rel="stylesheet" href={ d.Base + "/assets/css/output.css" }/>
+			<script defer src={ d.Base + "/assets/js/htmx.min.js" }></script>
+			<script defer src={ d.Base + "/assets/js/sse.min.js" }></script>
+			<script defer src={ d.Base + "/assets/js/app.min.js" }></script>
+			@input.Script()
+			@dialog.Script()
+		</head>
+		<body data-live-paused="false">
+			<a class="skip-link" href="#main-content">跳到主要内容</a>
+			<div class="app-shell">
+				<header class="app-header">
+					<a href={ d.Base + "/live" } class="flex items-center gap-2 font-semibold" aria-label="Seal 首页">
+						<img src={ d.Base + "/assets/img/seal.svg" } width="32" height="32" alt="" class="size-8 rounded-md"/>
+						<span>Seal</span><span class="hidden text-xs font-normal text-muted-foreground sm:inline">MySQL 风险观测台</span>
+					</a>
+					<form method="post" action={ d.Base + "/logout" }>
+						<input type="hidden" name="_csrf" value={ d.CSRF }/>
+						@button.Button(button.Props{Type: button.TypeSubmit, Variant: button.VariantGhost, Size: button.SizeSm}) { 退出 }
+					</form>
+				</header>
+				<nav class="app-nav" aria-label="主导航">
+					<a class={ navClass(d.Active,"live") } href={ d.Base+"/live" }>实时监控</a>
+					<a class={ navClass(d.Active,"analyses") } href={ d.Base+"/analyses" }>PCAP 分析</a>
+					<a class={ navClass(d.Active,"connections") } href={ d.Base+"/connections" }>数据库连接</a>
+					<a class={ navClass(d.Active,"settings") } href={ d.Base+"/settings" }>设置与诊断</a>
+				</nav>
+				<main id="main-content" class="app-main" tabindex="-1">
+					<div class="content">{ children... }</div>
+				</main>
+			</div>
+		</body>
+	</html>
+}
+
+templ AuthLayout(d PageData) {
+	<!doctype html>
+	<html lang="zh-CN">
+		<head>
+			<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<title>{ d.Title } · Seal</title><link rel="stylesheet" href={ d.Base+"/assets/css/output.css" }/>
+			<script defer src={ d.Base+"/assets/js/input.min.js" }></script>
+		</head>
+		<body><main class="grid min-h-dvh place-items-center p-4"><div class="w-full max-w-md">{ children... }</div></main></body>
+	</html>
+}
+
+templ LoginPage(d PageData) {
+	@AuthLayout(d) {
+		<section class="panel p-6" aria-labelledby="login-title">
+			<div class="mb-6 flex items-center gap-3"><img src={ d.Base+"/assets/img/seal.svg" } class="size-11 rounded-lg" alt=""/><div><h1 id="login-title" class="text-xl font-semibold">登录 Seal</h1><p class="text-sm text-muted-foreground">本地 MySQL 风险观测台</p></div></div>
+			if d.Error != "" {
+				@alert.Alert(alert.Props{Variant: alert.VariantDestructive, Class: "mb-4"}) {
+					@alert.Title() { 登录失败 }
+					@alert.Description() { { d.Error } }
+				}
+			}
+		<form method="post" action={ d.Base+"/login" } class="space-y-4">
+			<div class="field"><label for="password">管理员口令</label>@input.Input(input.Props{ID:"password",Name:"password",Type:input.TypePassword,Required:true,NoTogglePassword:true})</div>
+			@button.Button(button.Props{Type:button.TypeSubmit,FullWidth:true}) { 登录 }
+		</form>
+		</section>
+	}
+}
+
+templ SetupPage(d PageData) {
+	@AuthLayout(d) {
+		<section class="panel p-6" aria-labelledby="setup-title">
+			<div class="mb-5"><h1 id="setup-title" class="text-xl font-semibold">初始化管理员</h1><p class="mt-1 text-sm text-muted-foreground">仅允许从 loopback 完成一次。口令使用 Argon2id 哈希保存。</p></div>
+			if d.Error != "" {
+				@alert.Alert(alert.Props{Variant: alert.VariantDestructive, Class: "mb-4"}) {
+					@alert.Title() { 设置失败 }
+					@alert.Description() { { d.Error } }
+				}
+			}
+			<form method="post" action={ d.Base+"/setup" } class="space-y-4">
+				<div class="field"><label for="password">管理员口令</label>@input.Input(input.Props{ID:"password",Name:"password",Type:input.TypePassword,Required:true,NoTogglePassword:true})<p class="field-help">至少 12 字节；建议使用密码管理器生成。</p></div>
+				<div class="field"><label for="confirm">再次输入</label>@input.Input(input.Props{ID:"confirm",Name:"confirm",Type:input.TypePassword,Required:true,NoTogglePassword:true})</div>
+				@button.Button(button.Props{Type:button.TypeSubmit,FullWidth:true}) { 创建管理员 }
+			</form>
+		</section>
+	}
+}
+
+templ PageHeading(title, description string) {
+	<div class="mb-5 flex flex-wrap items-end justify-between gap-3"><div><h1 class="text-xl font-semibold">{ title }</h1><p class="mt-1 max-w-[72ch] text-sm text-muted-foreground">{ description }</p></div>{ children... }</div>
+}
+
+templ CaptureStatus(d PageData) {
+	<div id="capture-status" class="flex flex-wrap items-center gap-3" aria-live="polite">
+		<span class={ "inline-flex items-center gap-2 font-medium "+statusClass(d.Capture.State) }><span class="status-dot"></span>{ statusLabel(d.Capture.State) }</span>
+		<span class="text-xs text-muted-foreground">PID { fmt.Sprint(d.Capture.PID) } · { d.Capture.Interface } · { d.Capture.Filter }</span>
+		if d.Capture.State=="running" || d.Capture.State=="starting" {
+			<form hx-post={ d.Base+"/live/stop" } hx-target="#capture-status" hx-swap="outerHTML"><input type="hidden" name="_csrf" value={ d.CSRF }/>@button.Button(button.Props{Type:button.TypeSubmit,Variant:button.VariantOutline,Size:button.SizeSm}) { 停止 }</form>
+		} else {
+			<form hx-post={ d.Base+"/live/start" } hx-target="#capture-status" hx-swap="outerHTML"><input type="hidden" name="_csrf" value={ d.CSRF }/>@button.Button(button.Props{Type:button.TypeSubmit,Size:button.SizeSm}) { 启动 }</form>
+		}
+		if d.Capture.LastError != "" {
+			<p class="basis-full text-xs text-red-700">{ d.Capture.LastError }</p>
+		}
+	</div>
+}
+
+templ LivePage(d PageData) {
+	@Layout(d) {
+		@PageHeading("实时监控","共享全局抓包进程。关闭浏览器不会停止；TLS、压缩、丢包与解析盲区单独计数。") { @CaptureStatus(d) }
+		<div class="metric-strip mb-4">
+			<div class="metric"><div class="text-xs text-muted-foreground">已见数据包</div><div class="mt-1 font-mono text-base font-semibold">{ fmt.Sprint(d.Metrics.Packets) }</div></div>
+			<div class="metric"><div class="text-xs text-muted-foreground">解析 SQL</div><div class="mt-1 font-mono text-base font-semibold">{ fmt.Sprint(d.Metrics.Queries) }</div></div>
+			<div class="metric"><div class="text-xs text-muted-foreground">盲流</div><div class="mt-1 font-mono text-base font-semibold">{ fmt.Sprint(d.Metrics.BlindFlows) }</div></div>
+			<div class="metric"><div class="text-xs text-muted-foreground">解析丢弃</div><div class="mt-1 font-mono text-base font-semibold">{ fmt.Sprint(d.Metrics.ParserDropped) }</div></div>
+			<div class="metric"><div class="text-xs text-muted-foreground">客户端丢弃</div><div class="mt-1 font-mono text-base font-semibold">{ fmt.Sprint(d.Metrics.SubscriberDropped) }</div></div>
+		</div>
+		<section class="panel">
+			<div class="panel-header"><div><h2 class="font-semibold">SQL 流</h2><p class="text-xs text-muted-foreground">每 250ms 最多 100 条；浏览器最多保留 500 行。</p></div><div class="flex gap-2"><input id="live-filter" type="search" placeholder="筛选 SQL" aria-label="筛选 SQL" class="h-8 w-48 rounded-md border bg-background px-2 text-sm"/><button type="button" data-live-pause aria-pressed="false" class="h-8 rounded-md border bg-background px-3 text-sm font-medium">暂停</button></div></div>
+			<div class="overflow-x-auto">
+				@tableui.Table(tableui.Props{Class:"min-w-[900px] text-[13px]"}) {
+					@tableui.Caption(tableui.CaptionProps{Class:"sr-only"}) { 实时捕获并脱敏的 MySQL 查询 }
+					@tableui.Header(){ @tableui.Row(){ @tableui.Head(){ 时间 } @tableui.Head(){ 风险 } @tableui.Head(){ 命令 } @tableui.Head(){ SQL / 盲流原因 } @tableui.Head(){ 延迟 } @tableui.Head(){ 客户端 → 服务端 } } }
+					@tableui.Body(tableui.BodyProps{ID:"live-rows",Attributes:templ.Attributes{"hx-ext":"sse","sse-connect":d.Base+"/live/events","sse-swap":"queries","hx-swap":"afterbegin"}}) { @LiveRows(d.Base, d.Events) }
+				}
+			</div>
+			</section>
+		}
+	}
+
+templ LiveRows(base string, events []model.QueryEvent) {
+	for i := len(events) - 1; i >= 0; i-- {
+		@LiveRow(base, events[i])
+	}
+}
+
+templ LiveRow(base string, e model.QueryEvent) {
+	@tableui.Row(tableui.RowProps{Attributes:templ.Attributes{"data-sql":e.SQL}}) {
+		@tableui.Cell(tableui.CellProps{Class:"whitespace-nowrap text-muted-foreground"}) { { fmtTime(e.Time) } }
+		@tableui.Cell() {
+			if e.BlindReason != "" {
+				@badge.Badge(badge.Props{Class:"border-transparent bg-amber-100 text-amber-900"}) { 盲流 }
+			} else {
+				@badge.Badge(badge.Props{Class:riskClass(e.RiskScore)}) { { fmt.Sprintf("%d · %s",e.RiskScore,riskLabel(e.RiskScore)) } }
+			}
+		}
+		@tableui.Cell(tableui.CellProps{Class:"whitespace-nowrap font-mono text-xs"}) { { e.Command } }
+		@tableui.Cell(tableui.CellProps{Class:"sql-cell font-mono"}) {
+			if e.BlindReason != "" {
+				{ e.BlindReason }
+			} else {
+				<a class="hover:underline" href={ queryURL(base,e.Fingerprint) }>{ e.SQL }</a>
+				if e.ParameterMeta != "" {
+					<span class="ml-2 text-xs text-muted-foreground">{ e.ParameterMeta }</span>
+				}
+			}
+		}
+		@tableui.Cell(tableui.CellProps{Class:"whitespace-nowrap tabular-nums"}) { { fmtDuration(e.Latency) } }
+		@tableui.Cell(tableui.CellProps{Class:"whitespace-nowrap text-xs text-muted-foreground"}) { { e.Client } → { e.Server } }
+	}
+}
+
+templ ConnectionsPage(d PageData) {
+	@Layout(d) {
+		@PageHeading("数据库连接","密码使用本机密钥 AES-GCM 加密。连接仅用于手动测试与按需 EXPLAIN。") {}
+		if d.Message != "" {
+			@alert.Alert(alert.Props{Class: "mb-4"}) { @alert.Title() { 操作完成 } @alert.Description() { { d.Message } } }
+		}
+		if d.Error != "" {
+			@alert.Alert(alert.Props{Variant: alert.VariantDestructive, Class: "mb-4"}) { @alert.Title() { 操作失败 } @alert.Description() { { d.Error } } }
+		}
+		<div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+			<section class="panel">
+				<div class="panel-header"><h2 class="font-semibold">已保存连接</h2><span class="text-xs text-muted-foreground">{ fmt.Sprintf("%d 个",len(d.Connections)) }</span></div>
+				<div class="overflow-x-auto">
+					@tableui.Table() {
+						@tableui.Header() {
+							@tableui.Row() { @tableui.Head() { 名称 } @tableui.Head() { 地址 } @tableui.Head() { 用户 / Schema } @tableui.Head() { 端点映射 } @tableui.Head() { 操作 } }
+						}
+						@tableui.Body() {
+							if len(d.Connections) == 0 {
+								@tableui.Row() { @tableui.Cell(tableui.CellProps{Class:"py-8 text-center text-muted-foreground",Attributes:templ.Attributes{"colspan":"5"}}) { 尚无连接。添加只读或最小权限账号后，可对查询执行按需 EXPLAIN。 } }
+							}
+							for _, c := range d.Connections {
+								@tableui.Row() {
+									@tableui.Cell(tableui.CellProps{Class:"font-medium"}) { { c.Name } }
+									@tableui.Cell(tableui.CellProps{Class:"font-mono text-xs"}) { { fmt.Sprintf("%s:%d",c.Host,c.Port) } }
+									@tableui.Cell() { { c.User } } / { c.Database }
+									@tableui.Cell(tableui.CellProps{Class:"font-mono text-xs"}) { { c.Endpoint } }
+									@tableui.Cell() {
+										<div class="flex gap-2">
+											<form method="post" action={ d.Base+"/connections/test" }><input type="hidden" name="_csrf" value={ d.CSRF }/><input type="hidden" name="id" value={ c.ID }/>@button.Button(button.Props{Type:button.TypeSubmit,Variant:button.VariantOutline,Size:button.SizeSm}) { 测试 }</form>
+											@dialog.Dialog(dialog.Props{ID:"delete-"+c.ID}) {
+												@dialog.Trigger() { @button.Button(button.Props{Variant:button.VariantGhost,Size:button.SizeSm}) { 删除 } }
+												@dialog.Content() {
+													@dialog.Header() { @dialog.Title() { 删除数据库连接？ } @dialog.Description() { 连接 {c.Name} 的加密凭据将被删除；历史脱敏聚合保留。 } }
+													@dialog.Footer() {
+														@dialog.Close() { @button.Button(button.Props{Variant:button.VariantOutline}) { 取消 } }
+														<form method="post" action={ d.Base+"/connections/"+c.ID+"/delete" }><input type="hidden" name="_csrf" value={ d.CSRF }/>@button.Button(button.Props{Type:button.TypeSubmit,Variant:button.VariantDestructive}) { 确认删除 }</form>
+													}
+												}
+											}
+										</div>
+									}
+								}
+							}
+						}
+					}
+				</div>
+			</section>
+			<section class="panel p-4"><h2 class="mb-4 font-semibold">添加连接</h2><form method="post" action={ d.Base+"/connections" } class="space-y-3"><input type="hidden" name="_csrf" value={ d.CSRF }/>
+				<div class="field"><label for="name">名称</label>@input.Input(input.Props{ID:"name",Name:"name",Required:true})</div>
+				<div class="grid grid-cols-[1fr_6rem] gap-2"><div class="field"><label for="host">主机</label>@input.Input(input.Props{ID:"host",Name:"host",Required:true})</div><div class="field"><label for="port">端口</label>@input.Input(input.Props{ID:"port",Name:"port",Type:input.TypeNumber,Value:"3306",Required:true})</div></div>
+				<div class="field"><label for="user">用户</label>@input.Input(input.Props{ID:"user",Name:"user",Required:true})</div><div class="field"><label for="db-password">密码</label>@input.Input(input.Props{ID:"db-password",Name:"password",Type:input.TypePassword,Required:true,NoTogglePassword:true})</div>
+				<div class="field"><label for="database">默认 Schema</label>@input.Input(input.Props{ID:"database",Name:"database",Required:true})</div><div class="field"><label for="endpoint">捕获端点映射</label>@input.Input(input.Props{ID:"endpoint",Name:"endpoint",Placeholder:"10.0.0.8:3306"})<p class="field-help">用于把抓包目标映射到此连接。</p></div>
+				@button.Button(button.Props{Type:button.TypeSubmit,FullWidth:true}){ 保存连接 }
+			</form></section>
+		</div>
+	}
+}
+
+templ AnalysesPage(d PageData) {
+	@Layout(d) {
+		@PageHeading("PCAP 分析","上传文件复用实时捕获解析管线。临时原文件在任务结束后删除；仅脱敏聚合落盘。") {
+			<form method="post" action={ d.Base+"/analyses" } enctype="multipart/form-data" class="flex items-center gap-2"><input type="hidden" name="_csrf" value={ d.CSRF }/><input class="max-w-64 text-sm file:mr-2 file:rounded-md file:border-0 file:bg-secondary file:px-3 file:py-2" type="file" name="pcap" accept=".pcap,application/vnd.tcpdump.pcap" required/>@button.Button(button.Props{Type:button.TypeSubmit}){ 上传分析 }</form>
+		}
+		if d.Error != "" {
+			@alert.Alert(alert.Props{Variant:alert.VariantDestructive,Class:"mb-4"}) { @alert.Title() { 上传失败 } @alert.Description() { { d.Error } } }
+		}
+		<section class="panel mb-4">
+			<div class="panel-header"><h2 class="font-semibold">分析任务</h2></div>
+			<div class="overflow-x-auto">
+				@tableui.Table() {
+					@tableui.Header() { @tableui.Row() { @tableui.Head() { 时间 } @tableui.Head() { 文件 } @tableui.Head() { 状态 } @tableui.Head() { 数据包 } @tableui.Head() { 查询 } @tableui.Head() { 说明 } } }
+					@tableui.Body() {
+						if len(d.Jobs) == 0 {
+							@tableui.Row() { @tableui.Cell(tableui.CellProps{Class:"py-8 text-center text-muted-foreground",Attributes:templ.Attributes{"colspan":"6"}}) { 上传 PCAP 后，任务进度与结果显示在这里。 } }
+						}
+						for _, j := range d.Jobs {
+							@tableui.Row() { @tableui.Cell() { {fmtTime(j.CreatedAt)} } @tableui.Cell(tableui.CellProps{Class:"font-medium"}) { {j.Filename} } @tableui.Cell() { @badge.Badge(badge.Props{Variant:badge.VariantOutline}) { {j.Status} } } @tableui.Cell() { {fmt.Sprint(j.Packets)} } @tableui.Cell() { {fmt.Sprint(j.Queries)} } @tableui.Cell(tableui.CellProps{Class:"text-xs text-muted-foreground"}) { {j.Error} } }
+						}
+					}
+				}
+			</div>
+		</section>
+		<section class="panel"><div class="panel-header"><h2 class="font-semibold">聚合 SQL</h2><span class="text-xs text-muted-foreground">共 { fmt.Sprint(d.Total) } 个指纹</span></div><div class="overflow-x-auto">@AggregateTable(d)</div></section>
+	}
+}
+
+templ AggregateTable(d PageData) {
+	@tableui.Table(tableui.Props{Class:"min-w-[800px]"}) {
+		@tableui.Header() { @tableui.Row() { @tableui.Head() { 风险 } @tableui.Head() { SQL 指纹样本 } @tableui.Head() { 次数 } @tableui.Head() { 平均延迟 } @tableui.Head() { 最大延迟 } @tableui.Head() { 最近出现 } } }
+		@tableui.Body() {
+			if len(d.Aggregates) == 0 {
+				@tableui.Row() { @tableui.Cell(tableui.CellProps{Class:"py-8 text-center text-muted-foreground",Attributes:templ.Attributes{"colspan":"6"}}) { 尚无聚合。启动实时监控或上传 PCAP。 } }
+			}
+			for _, a := range d.Aggregates {
+				@tableui.Row() { @tableui.Cell() { @badge.Badge(badge.Props{Class:riskClass(a.RiskScore)}) { {fmt.Sprintf("%d · %s",a.RiskScore,riskLabel(a.RiskScore))} } } @tableui.Cell(tableui.CellProps{Class:"sql-cell font-mono"}) { <a class="hover:underline" href={queryURL(d.Base,a.Fingerprint)}>{a.Sample}</a> } @tableui.Cell(tableui.CellProps{Class:"tabular-nums"}) { {fmt.Sprint(a.Count)} } @tableui.Cell() { {fmtDuration(a.Average())} } @tableui.Cell() { {fmtDuration(a.Max)} } @tableui.Cell(tableui.CellProps{Class:"whitespace-nowrap text-muted-foreground"}) { {fmtTime(a.LastSeen)} } }
+			}
+		}
+	}
+}
+
+templ RiskPage(d PageData) {
+	@Layout(d) {
+		@PageHeading("风险详情","静态规则说明证据与建议；分数越高风险越严重。EXPLAIN 仅由用户明确触发。") { @badge.Badge(badge.Props{Class:riskClass(d.Report.Score)}) { { fmt.Sprintf("%d / 100 · %s",d.Report.Score,riskLabel(d.Report.Score)) } } }
+		<section class="panel mb-4"><div class="panel-header"><h2 class="font-semibold">脱敏 SQL</h2>@button.Button(button.Props{Variant:button.VariantOutline,Size:button.SizeSm,Attributes:templ.Attributes{"data-copy":"risk-sql"}}){复制 SQL}</div><pre id="risk-sql" class="overflow-x-auto p-4 text-[13px] leading-6">{d.Aggregate.Sample}</pre><div class="border-t px-4 py-2 text-xs text-muted-foreground">指纹 {d.Aggregate.Fingerprint} · 执行 {fmt.Sprint(d.Aggregate.Count)} 次 · 原文与参数不会落盘</div></section>
+		<div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_28rem]">
+			<section class="panel">
+				<div class="panel-header"><h2 class="font-semibold">规则证据</h2></div>
+				<div class="divide-y">
+					if len(d.Report.Findings) == 0 {
+						<div class="p-6 text-center text-muted-foreground">未命中首版静态风险规则。仍需结合权限、事务与执行计划判断。</div>
+					}
+					for _, f := range d.Report.Findings {
+						<article class="p-4"><div class="flex items-center justify-between gap-3"><h3 class="font-semibold">{f.Rule}</h3><span class="text-sm font-semibold">+{fmt.Sprint(f.Weight)}</span></div><p class="mt-2 text-sm">{f.Evidence}</p><p class="mt-1 text-sm text-muted-foreground">建议：{f.Suggestion}</p></article>
+					}
+				</div>
+			</section>
+			<section class="panel p-4"><h2 class="font-semibold">执行计划</h2><p class="mt-1 text-sm text-muted-foreground">每连接最多 1 并发，4 秒超时，缓存 24 小时。</p>
+				if d.ExplainNote != "" {
+					@alert.Alert(alert.Props{Class:"mt-4"}) { @alert.Title() { 当前不可执行 } @alert.Description() { {d.ExplainNote} } }
+				}
+				if d.Explain != nil {
+					<div class="mt-4 rounded-md bg-muted p-3 text-sm"><p>{d.Explain.Summary}</p><details class="mt-2"><summary class="cursor-pointer font-medium">原始 EXPLAIN JSON</summary><pre class="mt-2 max-h-80 overflow-auto text-xs">{d.Explain.Raw}</pre></details></div>
+				}
+				if d.ExplainNote == "" {
+					<form method="post" action={d.Base+"/queries/"+d.Aggregate.Fingerprint+"/explain"} class="mt-4 space-y-3">
+						<input type="hidden" name="_csrf" value={d.CSRF}/>
+						<div class="field"><label for="connection_id">数据库连接</label><select id="connection_id" name="connection_id" required class="native-select"><option value="">选择连接</option>
+							for _, c := range d.Connections {
+								<option value={c.ID}>{c.Name} · {c.Database}</option>
+							}
+						</select></div>
+						@button.Button(button.Props{Type:button.TypeSubmit,FullWidth:true}) { 运行 EXPLAIN }
+					</form>
+				}
+			</section>
+		</div>
+	}
+}
+
+templ SettingsPage(d PageData) {
+	@Layout(d) {
+		@PageHeading("设置与诊断","公开运行配置由 CLI 参数覆盖环境变量。修改抓包参数后重启 Seal 生效。") {}
+		<div class="grid gap-4 lg:grid-cols-2"><section class="panel"><div class="panel-header"><h2 class="font-semibold">抓包配置</h2></div><dl class="divide-y text-sm"><div class="flex justify-between p-4"><dt>网卡</dt><dd class="font-mono">{d.Config.Interface}</dd></div><div class="flex justify-between p-4"><dt>MySQL 端口</dt><dd class="font-mono">{portsString(d.Config.MySQLPorts)}</dd></div><div class="flex justify-between p-4"><dt>tcpdump</dt><dd class="font-mono">{d.Config.TCPDumpPath}</dd></div><div class="flex justify-between p-4"><dt>BPF</dt><dd class="font-mono">{d.Capture.Filter}</dd></div></dl></section>
+		<section class="panel"><div class="panel-header"><h2 class="font-semibold">存储与限制</h2></div><dl class="divide-y text-sm"><div class="flex justify-between p-4"><dt>数据目录</dt><dd class="font-mono">{d.Config.DataDir}</dd></div><div class="flex justify-between p-4"><dt>聚合保留</dt><dd>{d.Config.Retention.String()}</dd></div><div class="flex justify-between p-4"><dt>上传上限</dt><dd>{fmt.Sprintf("%.0f MiB",float64(d.Config.MaxUpload)/(1<<20))}</dd></div><div class="flex justify-between p-4"><dt>内存事件环</dt><dd>{fmt.Sprint(d.Config.RingCapacity)} 条</dd></div></dl></section></div>
+		@alert.Alert(alert.Props{Class:"mt-4"}){@alert.Title(){抓包权限诊断}@alert.Description(){<p>Seal 不执行 sudo 或 setcap。systemd 服务应仅授予 <code>CAP_NET_RAW</code> 与 <code>CAP_NET_ADMIN</code>。</p><code class="mt-1 block">sudo setcap cap_net_raw,cap_net_admin=eip {d.Config.TCPDumpPath}</code>}}
+	}
+}
+
+templ ErrorFragment(message string) { @alert.Alert(alert.Props{Variant:alert.VariantDestructive}){@alert.Title(){请求未完成}@alert.Description(){{message}}} }
+
+templ ErrorPage(d PageData, message string) {
+	@Layout(d) {
+		@PageHeading("请求未完成", "修正以下问题后重试。") {}
+		@ErrorFragment(message)
+	}
+}

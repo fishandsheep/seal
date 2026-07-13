@@ -1,0 +1,23 @@
+[Unit]
+Description=Seal MySQL risk observer
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=seal
+Group=seal
+WorkingDirectory=/var/lib/seal
+ExecStart=/usr/local/bin/seal --listen 127.0.0.1:7070 --data-dir /var/lib/seal/data
+Restart=on-failure
+RestartSec=3s
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/seal
+CapabilityBoundingSet=CAP_NET_RAW CAP_NET_ADMIN
+AmbientCapabilities=CAP_NET_RAW CAP_NET_ADMIN
+
+[Install]
+WantedBy=multi-user.target

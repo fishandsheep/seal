@@ -1,0 +1,6 @@
+{
+  "files": ["web/**/*.templ"],
+  "insertBefore": "</head>",
+  "commentSyntax": "html",
+  "cspChecked": true
+}

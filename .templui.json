@@ -1,0 +1,7 @@
+{
+  "componentsDir": "web/components",
+  "utilsDir": "web/components/utils",
+  "moduleName": "github.com/fishandsheep/seal",
+  "jsDir": "web/assets/js",
+  "jsPublicPath": "/seal/assets/js"
+}

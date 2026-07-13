@@ -1,4 +1,7 @@
 # Default ignored files
 .idea/
-target/
-
+node_modules/
+data/
+seal
+dist/
+coverage.out
